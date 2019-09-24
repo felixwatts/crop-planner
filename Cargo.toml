@@ -1,0 +1,8 @@
+[package]
+name = "crop-planner"
+version = "0.1.0"
+authors = ["Felix Watts <felix@provenance.org>"]
+edition = "2018"
+
+[dependencies]
+rand = "0.7.2"
