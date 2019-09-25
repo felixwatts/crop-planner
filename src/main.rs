@@ -14,11 +14,12 @@ type WeekId = usize;
 type WeekRange = usize;
 type HarvestableUnits = i32;
 
-const NUM_BEDS: usize = 80;
+const NUM_BEDS: usize = 150;
 const NUM_BOXES: i32 = 120;
 const MAX_CROPS_PER_BED: usize = 16;
-const SEASON_LENGTH: WeekRange = 24;
-const FIRST_BOX_WEEK: WeekId = 4;
+const SEASON_LENGTH: WeekRange = 28;
+const FIRST_BOX_WEEK: WeekId = 7;
+const LAST_BOX_WEEK: WeekId = 24;
 const POPULATION_SIZE: usize = 100;
 
 struct Variety<'a> {
@@ -27,38 +28,43 @@ struct Variety<'a> {
     growth_model: [ HarvestableUnits; SEASON_LENGTH ],
 }
 
-const NUM_VARIETIES: usize = 6;
+const NUM_VARIETIES: usize = 7;
 
 const VARIETIES: [Variety; NUM_VARIETIES] = [ 
     Variety{
-        name: "         ",
+        name: "",
         longevity: 1,
-        growth_model: [ 0; 24 ],
+        growth_model: [ 0; 28 ],
     }, 
     Variety{
-        name: "Spinach  ",
+        name: "Spinach",
         longevity: 23,
-        growth_model: [ 0, 0, 0, 0, 0, 0, 2, 4, 6, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 4, 2, 0 ],
+        growth_model: [ 0, 0, 0, 0, 0, 0, 2, 4, 6, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 4, 2, 0, 0, 0, 0, 0 ],
     }, 
     Variety{
-        name: "Radish   ",
+        name: "Radish",
         longevity: 2,
-        growth_model: [ 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+        growth_model: [ 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
     }, 
     Variety{
-        name: "Lettuce  ",
+        name: "Lettuce",
         longevity: 4,
-        growth_model: [ 0, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+        growth_model: [ 0, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
     }, 
     Variety{
-        name: "Tomato   ",
-        longevity: 14,
-        growth_model: [ 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+        name: "Tomato",
+        longevity: 28,
+        growth_model: [ 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5 ],
     }, 
     Variety{
-        name: "Carrot   ",
+        name: "Carrot",
         longevity: 16,
-        growth_model: [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 12, 12, 12, 10, 10, 10, 0, 0, 0, 0, 0, 0, 0, 0 ],
+        growth_model: [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 12, 12, 12, 10, 10, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+    }, 
+    Variety{
+        name: "Mescalin",
+        longevity: 5,
+        growth_model: [ 0, 0, 10, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
     }, 
 ];
 
@@ -75,15 +81,11 @@ fn get_random<R: Rng + ?Sized>(rng: &mut R) -> Solution {
 }
 
 fn mutate<R: Rng + ?Sized>(solution: &mut Solution, rng: &mut R) {
-    // let mut mutated = solution.clone();
-
     for _ in 0..3 {
         let index = rng.gen_range(0, solution.len()); // TODO can be made faster see docs
         let value = rng.gen_range(0, NUM_VARIETIES); // TODO can be made faster see docs
         solution[index] = value;
     }
-
-    // return mutated;
 }
 
 fn get_crossed<R: Rng + ?Sized>(mother: &Solution, father: &Solution, rng: &mut R) -> Solution {
@@ -141,27 +143,28 @@ fn get_harvest_plan(sol: &Solution, varieties: &[Variety]) -> HarvestPlan {
 }
 
 fn get_score(sol: &Solution, varieties: &[Variety]) -> i32 {
+    let mut score = 0;
+
+    // all other things being equal, prefer planting fewer crops
+    // for g in sol.iter() {
+    //     if *g != 0 {
+    //         score -= 1;
+    //     }
+    // }
 
     let harvest_plan = get_harvest_plan(sol, varieties);
 
-    let mut score = 0;
+    // aim in each week to have the harvestable units of each crop equal to the number of boxes
+    for week in 0..SEASON_LENGTH {
+        let target_units = if week < FIRST_BOX_WEEK || week > LAST_BOX_WEEK { 0 } else { NUM_BOXES };
 
-    for g in sol.iter() {
-        if *g != 0 {
-            score -= 1;
-        }
-    }
-
-    // score the harvest plan by determining how much of the harvestable
-    // produce can be used to fill boxes
-    for week in FIRST_BOX_WEEK..SEASON_LENGTH {
         let harvest = &harvest_plan[week];
 
         for variety_id in 0..NUM_VARIETIES {
             let variety = &varieties[variety_id];
             let harvestable_units = harvest[variety_id];
 
-            score -= (harvestable_units - NUM_BOXES).abs();
+            score -= (harvestable_units - target_units).abs();
         }
     }
 
@@ -219,7 +222,7 @@ fn write_solution(sol: &Solution) {
 fn print_harvest_plan(harvest_plan: &HarvestPlan) {
     println!("");
     for v in 0..NUM_VARIETIES {
-        print!("{}", VARIETIES[v].name);
+        print!("{:<9}", VARIETIES[v].name);
         for w in 0..SEASON_LENGTH {
             print!("{:>6}", harvest_plan[w][v]);
         }
@@ -254,10 +257,10 @@ fn main() {
         
             println!("gen: {} score: {}", gen, best_score);
 
-            if best_score > -6500 {
-                write_solution(&best_solution);
-                break;
-            }
+            // if best_score > -5000 {
+            //     write_solution(&best_solution);
+            //     break;
+            // }
         }
 
         let next_generation: Vec<_> = (0..POPULATION_SIZE)
