@@ -34,6 +34,8 @@ fn main() {
 
             let best_solution = solver.get_best_solution();
 
+            // crate::solution::print_solution(best_solution, &params);
+
             let harvest_plan = crate::solution::to_harvest_plan(&best_solution, &params);
             crate::harvest_plan::print_harvest_plan(&harvest_plan, &params);
         

@@ -5,26 +5,44 @@ use rand::distributions::WeightedIndex;
 use rand::distributions::Bernoulli;
 use crate::params::Params;
 use crate::solution::Solution;
-use crate::constant::{POPULATION_SIZE, GeneId, VarietyId, SolutionId};
+use crate::constant::{POPULATION_SIZE, SEASON_LENGTH, GeneId, VarietyId, SolutionId, WeekId};
 
 pub struct Rand {
     rng: ThreadRng,
     dist_gene: Uniform<GeneId>,
     dist_variety: Uniform<VarietyId>,
     dist_selection: WeightedIndex<SolutionId>,
-    dist_parent: Bernoulli
+    dist_parent: Bernoulli,
+    plantable_varieties_by_week: Vec<Vec<VarietyId>>,
+    dist_plantable_variety_by_week: Vec<Uniform<VarietyId>>,
 }
 
 impl Rand {
     pub fn new(params: &Params) -> Rand {
         let weights = 1..(POPULATION_SIZE+1);
+        let mut plantable_varieties_by_week = std::iter::repeat(vec![ ])
+            .take(SEASON_LENGTH)
+            .collect::<Vec<_>>();
+        for week in 0..SEASON_LENGTH {
+            for variety in 0..params.varieties.len() {
+                if params.varieties[variety].planting_schedule[week] {
+                    plantable_varieties_by_week[week].push(variety);
+                }
+            }
+        } 
+        let dist_plantable_variety_by_week = plantable_varieties_by_week
+            .iter()
+            .map(|w| Uniform::from(0..w.len()))
+            .collect::<Vec<_>>();
 
         return Rand{
             rng: rand::thread_rng(),
             dist_gene: Uniform::from(0..params.genome_size()),
             dist_variety: Uniform::from(0..(params.varieties.len())),
             dist_selection: WeightedIndex::new(weights).unwrap(),
-            dist_parent: Bernoulli::new(0.5).unwrap()
+            dist_parent: Bernoulli::new(0.5).unwrap(),
+            plantable_varieties_by_week: plantable_varieties_by_week,
+            dist_plantable_variety_by_week: dist_plantable_variety_by_week
         }
     }
 
@@ -36,17 +54,20 @@ impl Rand {
         return self.dist_gene.sample(&mut self.rng);
     }
 
-    pub fn random_variety(&mut self) -> VarietyId {
-        return self.dist_variety.sample(&mut self.rng);
-    }
-
     pub fn select_individual(&mut self) -> SolutionId {
         return self.dist_selection.sample(&mut self.rng);
     }
 
-    pub fn randomize_solution(&mut self, slot: &mut Solution) {
-        for gene in 0..slot.len() {
-            slot[gene] = self.random_variety();
+    pub fn randomize_gene(&mut self, genome: &mut Solution, gene: GeneId) {
+        let week = gene % SEASON_LENGTH;
+        let i = self.dist_plantable_variety_by_week[week].sample(&mut self.rng);
+        let variety = self.plantable_varieties_by_week[week][i];
+        genome[gene] = variety;
+    }
+
+    pub fn randomize_solution(&mut self, genome: &mut Solution) {
+        for gene in 0..genome.len() {
+            self.randomize_gene(genome, gene);
         }
     }
 }
