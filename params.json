@@ -36,7 +36,7 @@
             "name": "~bA33",
             "flags": [ "polytunnel" ]
         },
-        
+
         {
             "name": "~bB11",
             "flags": [ "polytunnel" ]
@@ -273,28 +273,49 @@
     "varieties": [
         {
             "name": "Spinach",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 2, 4, 6, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 4, 2 ]
+            "planting_schedule": "mar,apr,may,jun,aug",
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8 ]
         },
         {
             "name": "Radish",
-            "harvest_schedule": [ 0, 20 ]
+            "planting_schedule": "mar,apr,may,jun,jul,aug,sep",
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 20 ]
         },
         {
             "name": "Lettuce",
-            "harvest_schedule": [ 0, 0, 0, 20 ]
+            "planting_schedule": "mar,apr,may,jun,jul",
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5 ]
         },
         {
             "name": "Tomato",
             "flags": [ "polytunnel" ],
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5 ]
+            "planting_schedule": "mar,apr",
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10 ]
         },
         {
             "name": "Carrot",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 12, 12, 12, 10, 10, 10 ]
+            "planting_schedule": "mar,apr,may,jun,jul",
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 30, 30, 30 ]
         },
         {
-            "name": "Mescalin",
-            "harvest_schedule": [ 0, 0, 10, 0, 8 ]
+            "name": "Swede",
+            "planting_schedule": "apr,may,jun",
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10 ]
+        },
+        {
+            "name": "BBean",
+            "planting_schedule": "may,jun",
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10 ]
+        },
+        {
+            "name": "Brocoli",
+            "planting_schedule": "sep,oct",
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10 ]
+        },
+        {
+            "name": "SOnion",
+            "planting_schedule": "aug,sep,oct",
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10 ]
         }
     ]
 }

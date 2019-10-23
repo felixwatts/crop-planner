@@ -15,33 +15,39 @@ pub fn to_harvest_plan(sol: &Solution, params: &Params) -> HarvestPlan {
         .take(SEASON_LENGTH)
         .collect::<Vec<_>>();
     for bed in 0..params.num_beds() {
-        let mut week: WeekId = 0;
-        for crop in 0..SEASON_LENGTH {
-            let gene_id = bed * SEASON_LENGTH + crop;
+        // let mut week: WeekId = 0;
+        for planting_week in 0..SEASON_LENGTH {
+            let gene_id = bed * SEASON_LENGTH + planting_week;
             let variety_id = sol[gene_id];
             let variety = &params.varieties[variety_id];
 
-            for growth_week in 0..variety.get_longevity() {
-                let harvest_week = (week+growth_week) % SEASON_LENGTH;
+            for growth_week in 1..variety.get_longevity() {
+                let harvest_week = (planting_week+growth_week) % SEASON_LENGTH;
+
+
+                if sol[harvest_week] != 0 {
+                    break;
+                }
+
                 let harvest_units = variety.harvest_schedule[growth_week];
                 harvest_plan[harvest_week][variety_id] += harvest_units;
             }
 
-            week += variety.get_longevity();
+            // week += variety.get_longevity();
         }
     }
 
     return harvest_plan;
 }
 
-// fn print_solution(sol: &Solution, params: &Params) {
-//     for bed in 0..NUM_BEDS {
-//         for crop in 0..SEASON_LENGTH {
-//             let gene_id = bed * SEASON_LENGTH + crop;
-//             let variety_id = sol[gene_id];
-//             let variety = &params.varieties[variety_id];
-//             print!("[{}] ", variety.name);
-//         }
-//         println!("");
-//     }
-// }
+pub fn print_solution(sol: &Solution, params: &Params) {
+    for bed in 0..params.beds.len() {
+        for crop in 0..SEASON_LENGTH {
+            let gene_id = bed * SEASON_LENGTH + crop;
+            let variety_id = sol[gene_id];
+            let variety = &params.varieties[variety_id];
+            print!("[{}] ", variety.name);
+        }
+        println!("");
+    }
+}

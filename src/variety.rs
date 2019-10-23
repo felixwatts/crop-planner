@@ -7,9 +7,27 @@ use crate::constant::{ SEASON_LENGTH, WeekRange, HarvestableUnits };
 #[derive(Clone)]
 pub struct Variety {
     pub name: String,
-    // planting_schedule: [ bool; SEASON_LENGTH ],
+    pub planting_schedule: [ bool; SEASON_LENGTH ],
     pub harvest_schedule: Vec<HarvestableUnits>,
     pub flags: BedFlags,
+}
+
+fn try_parse_planting_schedule(input: &str) -> Result<[ bool; SEASON_LENGTH ], &'static str> {
+    let mut result = [ false; SEASON_LENGTH ];
+    let parts = input.split(',');
+    let months = [ "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec" ];
+    for part in parts {
+        let index = months.iter().position(|&m| m == part);
+        match index {
+            Some(i) => {
+                for n in 0..4 {
+                    result[i*4+n] = true;
+                }
+            },
+            None => return Err("Failed to parse harvest schedule")
+        }
+    }
+    Ok(result)
 }
 
 impl TryFrom<&JsonValue> for Variety {
@@ -21,11 +39,13 @@ impl TryFrom<&JsonValue> for Variety {
         let flags = BedFlags::try_from(&value_obj["flags"])?;
         let harvest_schedule_arr = as_array(&value_obj["harvest_schedule"])?;
         let harvest_schedule = harvest_schedule_arr.iter().map(|j| as_int(j)).collect::<Result<Vec<_>, _>>()?;
+        let planting_schedule_str = as_string(&value_obj["planting_schedule"])?;
+        let planting_schedule = try_parse_planting_schedule(&planting_schedule_str)?;
 
         Ok(Variety {
             name: String::from(name),
             flags: flags,
-            // planting_schedule: [ true; SEASON_LENGTH ],
+            planting_schedule: planting_schedule,
             harvest_schedule: harvest_schedule,
         })
     }
@@ -38,13 +58,16 @@ fn variety_from_json() {
 {
     "name": "tomato",
     "flags": [ "polytunnel" ],
-    "harvest_schedule": [ 0, 1, 2, 3 ]
+    "harvest_schedule": [ 0, 1, 2, 3 ],
+    "planting_schedule": "apr,may"
 }"#).expect("test is wrong");
     let variety = Variety::try_from(&js).expect("failed to parse");
     assert_eq!(variety.name, "tomato");
     assert!(variety.flags.has_all(&BED_FLAG_POLYTUNNEL));
     assert_eq!(variety.harvest_schedule.len(), 4);
     assert_eq!(variety.harvest_schedule[2], 2);
+    assert_eq!(variety.planting_schedule[11], false);
+    assert_eq!(variety.planting_schedule[12], true);
 }
 
 impl Variety {
@@ -52,49 +75,3 @@ impl Variety {
         return self.harvest_schedule.len();
     }
 }
-
-// pub fn new() -> Box<Varieties> {
-//     Box::new([
-//         Variety{
-//             name: "",
-//             planting_schedule: [ false; SEASON_LENGTH ],
-//             harvest_schedule: vec![ 0 ],
-//         },
-
-//         Variety{
-//             name: "Spinach",
-//             planting_schedule: [ false; SEASON_LENGTH ],
-//             harvest_schedule: vec![ 0, 0, 0, 0, 0, 0, 2, 4, 6, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 4, 2 ],
-//         },
-
-//         Variety{
-//             name: "Radish",
-//             planting_schedule: [ false; SEASON_LENGTH ],
-//             harvest_schedule: vec![ 0, 20 ],
-//         },
-
-//         Variety{
-//             name: "Lettuce",
-//             planting_schedule: [ false; SEASON_LENGTH ],
-//             harvest_schedule: vec![ 0, 0, 0, 20 ],
-//         },
-
-//         Variety{
-//             name: "Tomato",
-//             planting_schedule: [ false; SEASON_LENGTH ],
-//             harvest_schedule: vec![ 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5 ],
-//         },
-
-//         Variety{
-//             name: "Carrot",
-//             planting_schedule: [ false; SEASON_LENGTH ],
-//             harvest_schedule: vec![ 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 12, 12, 12, 10, 10, 10 ],
-//         },
-
-//         Variety{
-//             name: "Mescalin",
-//             planting_schedule: [ false; SEASON_LENGTH ],
-//             harvest_schedule: vec![ 0, 0, 10, 0, 8 ],
-//         }
-//     ])
-// }

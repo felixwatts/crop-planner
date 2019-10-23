@@ -19,10 +19,11 @@ impl TryFrom<&JsonValue> for Params {
         let value_json_obj = as_object(value)?;
         let varieties_json_array = as_array(&value_json_obj["varieties"])?;
         let mut varieties = varieties_json_array.iter().map(|j| Variety::try_from(j)).collect::<Result<Vec<_>, _>>()?;
-        varieties.push(Variety{
+        varieties.insert(0, Variety{
             name: String::from(""),
             flags: BED_FLAG_NONE,
-            harvest_schedule: vec![ 0 ]
+            harvest_schedule: vec![ 0 ],
+            planting_schedule: [ true; SEASON_LENGTH ]
         });
         let beds_json_array = as_array(&value_json_obj["beds"])?;
         let beds = beds_json_array.iter().map(|j| Bed::try_from(j)).collect::<Result<Vec<_>, _>>()?;
@@ -63,12 +64,14 @@ fn params_from_json() {
         {
             "name": "lettuce",
             "flags": [ ],
-            "harvest_schedule": [ 0, 1, 2, 3 ]
+            "harvest_schedule": [ 0, 1, 2, 3 ],
+            "planting_schedule": "apr,may"
         },
         {
             "name": "tomato",
             "flags": [ "polytunnel" ],
-            "harvest_schedule": [ 0, 1, 2, 3 ]
+            "harvest_schedule": [ 0, 1, 2, 3 ],
+            "planting_schedule": "apr,may"
         }
     ]
 }"#).expect("test is wrong");
@@ -77,9 +80,10 @@ fn params_from_json() {
     assert_eq!(params.beds[1].name, "~b01");
     assert!(params.beds[1].flags.has_all(&BED_FLAG_POLYTUNNEL));
 
-    assert_eq!(params.varieties.len(), 2);
-    assert_eq!(params.varieties[1].name, "tomato");
-    assert!(params.varieties[1].flags.has_all(&BED_FLAG_POLYTUNNEL));
-    assert_eq!(params.varieties[0].harvest_schedule.len(), 4);
-    assert_eq!(params.varieties[0].harvest_schedule[2], 2);
+    assert_eq!(params.varieties.len(), 3);
+    assert_eq!(params.varieties[0].name, "");
+    assert_eq!(params.varieties[2].name, "tomato");
+    assert!(params.varieties[2].flags.has_all(&BED_FLAG_POLYTUNNEL));
+    assert_eq!(params.varieties[1].harvest_schedule.len(), 4);
+    assert_eq!(params.varieties[1].harvest_schedule[2], 2);
 }

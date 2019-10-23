@@ -1,7 +1,7 @@
 use crate::rand::Rand;
 use crate::params::Params;
 use crate::solution::{Solution};
-use crate::constant::{POPULATION_SIZE, SEASON_LENGTH, FIRST_BOX_WEEK, LAST_BOX_WEEK, NUM_BOXES, SolutionId, GeneId, VarietyId};
+use crate::constant::{POPULATION_SIZE, SEASON_LENGTH, NUM_BOXES, SolutionId, GeneId, VarietyId};
 
 pub struct Solver {
     rand: Rand,
@@ -24,13 +24,6 @@ impl Solver {
         for i in 0..POPULATION_SIZE {
             solver.rand.randomize_solution(&mut solver.pop[i]);
         }
-
-        // for x in &solver.pop {
-        //     for y in x {
-        //         print!("{}, ", y);
-        //     }
-        //     println!("");
-        // }
 
         // initial sort by fitness
         solver.step();
@@ -56,14 +49,18 @@ impl Solver {
 
         // aim in each week to have the harvestable units of each crop equal to the number of boxes
         for week in 0..SEASON_LENGTH {
-            let target_units = if week < FIRST_BOX_WEEK || week > LAST_BOX_WEEK { 0 } else { NUM_BOXES };
+            for bed in 0..self.params.beds.len() {
+                if sol[bed*SEASON_LENGTH + week] != 0 {
+                    score = score - 1;
+                }
+            }
 
             let harvest = &harvest_plan[week];
 
             for variety_id in 0..self.params.varieties.len() {
                 let harvestable_units = harvest[variety_id];
 
-                score -= (harvestable_units - target_units).abs();
+                score -= (harvestable_units - NUM_BOXES).abs();
             }
         }
 
@@ -84,8 +81,7 @@ impl Solver {
     fn mutate(&mut self, child: &mut Solution) {
         // for _ in 0..3 {
         let gene = self.rand.random_gene();
-        let variety = self.rand.random_variety();
-        child[gene] = variety;
+        self.rand.randomize_gene(child, gene);
         // }
     }
 
