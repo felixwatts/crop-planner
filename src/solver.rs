@@ -1,23 +1,22 @@
 use crate::rand::Rand;
-use crate::rand::new_rand;
-use crate::variety::Varieties;
+use crate::params::Params;
 use crate::solution::{Solution};
-use crate::constant::{POPULATION_SIZE, SOLUTION_SIZE, NUM_VARIETIES, SEASON_LENGTH, FIRST_BOX_WEEK, LAST_BOX_WEEK, NUM_BOXES, SolutionId, GeneId, VarietyId};
+use crate::constant::{POPULATION_SIZE, SOLUTION_SIZE, SEASON_LENGTH, FIRST_BOX_WEEK, LAST_BOX_WEEK, NUM_BOXES, SolutionId, GeneId, VarietyId};
 
-pub struct Solver<'a> {
+pub struct Solver {
     rand: Rand,
-    varieties: &'a Box<Varieties>,
+    params: Params,
     pop: Vec<Solution>,
 }
 
-impl<'a> Solver<'a> {
+impl Solver {
 
-    pub fn new(varieties: &'a Box<Varieties>) -> Solver<'a> {
-        let rand = new_rand();
+    pub fn new(params: Params) -> Solver {
+        let rand = Rand::new(&params);
 
         let mut solver = Solver {
             rand: rand,
-            varieties: varieties,
+            params: params,
             pop: vec!(crate::solution::new(); POPULATION_SIZE),
         };
 
@@ -45,7 +44,7 @@ impl<'a> Solver<'a> {
     fn score(&self, sol: &Solution) -> i32 {
         let mut score = 0;
 
-        let harvest_plan = crate::solution::to_harvest_plan(sol, &self.varieties);
+        let harvest_plan = crate::solution::to_harvest_plan(sol, &self.params);
 
         // aim in each week to have the harvestable units of each crop equal to the number of boxes
         for week in 0..SEASON_LENGTH {
@@ -53,7 +52,7 @@ impl<'a> Solver<'a> {
 
             let harvest = &harvest_plan[week];
 
-            for variety_id in 0..NUM_VARIETIES {
+            for variety_id in 0..self.params.varieties.len() {
                 let harvestable_units = harvest[variety_id];
 
                 score -= (harvestable_units - target_units).abs();

@@ -3,8 +3,9 @@ use rand::distributions::Distribution;
 use rand::distributions::Uniform;
 use rand::distributions::WeightedIndex;
 use rand::distributions::Bernoulli;
+use crate::params::Params;
 use crate::solution::Solution;
-use crate::constant::{POPULATION_SIZE, SOLUTION_SIZE, NUM_VARIETIES, GeneId, VarietyId, SolutionId};
+use crate::constant::{POPULATION_SIZE, SOLUTION_SIZE, GeneId, VarietyId, SolutionId};
 
 pub struct Rand {
     rng: ThreadRng,
@@ -14,19 +15,19 @@ pub struct Rand {
     dist_parent: Bernoulli
 }
 
-pub fn new_rand() -> Rand {
-    let weights = 1..(POPULATION_SIZE+1);
-
-    return Rand{
-        rng: rand::thread_rng(),
-        dist_gene: Uniform::from(0..(SOLUTION_SIZE)),
-        dist_variety: Uniform::from(0..(NUM_VARIETIES)),
-        dist_selection: WeightedIndex::new(weights).unwrap(),
-        dist_parent: Bernoulli::new(0.5).unwrap()
-    }
-}
-
 impl Rand {
+    pub fn new(params: &Params) -> Rand {
+        let weights = 1..(POPULATION_SIZE+1);
+
+        return Rand{
+            rng: rand::thread_rng(),
+            dist_gene: Uniform::from(0..(SOLUTION_SIZE)),
+            dist_variety: Uniform::from(0..(params.varieties.len())),
+            dist_selection: WeightedIndex::new(weights).unwrap(),
+            dist_parent: Bernoulli::new(0.5).unwrap()
+        }
+    }
+
     pub fn random_parent(&mut self) -> bool {
         return self.dist_parent.sample(&mut self.rng);
     }

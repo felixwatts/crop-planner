@@ -1,0 +1,14 @@
+{
+    "beds": [
+        {
+            "name": "~b00",
+            "flags": [ "polytunnel" ]
+        }
+    ],
+    "varieties": [
+        {
+            "name": "tomato",
+            "flags": [ "polytunnel" ]
+        }
+    ]
+}
