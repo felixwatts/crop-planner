@@ -5,7 +5,7 @@ use rand::distributions::WeightedIndex;
 use rand::distributions::Bernoulli;
 use crate::params::Params;
 use crate::solution::Solution;
-use crate::constant::{POPULATION_SIZE, SOLUTION_SIZE, GeneId, VarietyId, SolutionId};
+use crate::constant::{POPULATION_SIZE, GeneId, VarietyId, SolutionId};
 
 pub struct Rand {
     rng: ThreadRng,
@@ -21,7 +21,7 @@ impl Rand {
 
         return Rand{
             rng: rand::thread_rng(),
-            dist_gene: Uniform::from(0..(SOLUTION_SIZE)),
+            dist_gene: Uniform::from(0..params.genome_size()),
             dist_variety: Uniform::from(0..(params.varieties.len())),
             dist_selection: WeightedIndex::new(weights).unwrap(),
             dist_parent: Bernoulli::new(0.5).unwrap()

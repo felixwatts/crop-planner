@@ -7,7 +7,7 @@ use crate::constant::{ SEASON_LENGTH, WeekRange, HarvestableUnits };
 #[derive(Clone)]
 pub struct Variety {
     pub name: String,
-    planting_schedule: [ bool; SEASON_LENGTH ],
+    // planting_schedule: [ bool; SEASON_LENGTH ],
     pub harvest_schedule: Vec<HarvestableUnits>,
     pub flags: BedFlags,
 }
@@ -19,12 +19,14 @@ impl TryFrom<&JsonValue> for Variety {
         let value_obj = as_object(&value)?;
         let name = as_string(&value_obj["name"])?;
         let flags = BedFlags::try_from(&value_obj["flags"])?;
+        let harvest_schedule_arr = as_array(&value_obj["harvest_schedule"])?;
+        let harvest_schedule = harvest_schedule_arr.iter().map(|j| as_int(j)).collect::<Result<Vec<_>, _>>()?;
 
         Ok(Variety {
             name: String::from(name),
             flags: flags,
-            planting_schedule: [ true; SEASON_LENGTH ],
-            harvest_schedule: vec![ 0, 0, 0, 20 ],
+            // planting_schedule: [ true; SEASON_LENGTH ],
+            harvest_schedule: harvest_schedule,
         })
     }
 }
@@ -35,11 +37,14 @@ fn variety_from_json() {
     let js = json::parse(r#"
 {
     "name": "tomato",
-    "flags": [ "polytunnel" ]
+    "flags": [ "polytunnel" ],
+    "harvest_schedule": [ 0, 1, 2, 3 ]
 }"#).expect("test is wrong");
     let variety = Variety::try_from(&js).expect("failed to parse");
     assert_eq!(variety.name, "tomato");
     assert!(variety.flags.has_all(&BED_FLAG_POLYTUNNEL));
+    assert_eq!(variety.harvest_schedule.len(), 4);
+    assert_eq!(variety.harvest_schedule[2], 2);
 }
 
 impl Variety {

@@ -1,5 +1,6 @@
-use crate::bed::{Bed, BED_FLAG_POLYTUNNEL};
+use crate::bed::{Bed, BED_FLAG_NONE, BED_FLAG_POLYTUNNEL};
 use crate::variety::Variety;
+use crate::constant::SEASON_LENGTH;
 use crate::common::*;
 use std::convert::TryFrom;
 use json::JsonValue;
@@ -17,7 +18,12 @@ impl TryFrom<&JsonValue> for Params {
 
         let value_json_obj = as_object(value)?;
         let varieties_json_array = as_array(&value_json_obj["varieties"])?;
-        let varieties = varieties_json_array.iter().map(|j| Variety::try_from(j)).collect::<Result<Vec<_>, _>>()?;
+        let mut varieties = varieties_json_array.iter().map(|j| Variety::try_from(j)).collect::<Result<Vec<_>, _>>()?;
+        varieties.push(Variety{
+            name: String::from(""),
+            flags: BED_FLAG_NONE,
+            harvest_schedule: vec![ 0 ]
+        });
         let beds_json_array = as_array(&value_json_obj["beds"])?;
         let beds = beds_json_array.iter().map(|j| Bed::try_from(j)).collect::<Result<Vec<_>, _>>()?;
 
@@ -28,9 +34,19 @@ impl TryFrom<&JsonValue> for Params {
     }
 }
 
+impl Params {
+    pub fn genome_size(&self) -> usize {
+        self.beds.len() * SEASON_LENGTH
+    }
+
+    pub fn num_beds(&self) -> usize {
+        self.beds.len()
+    }
+}
+
 #[cfg(test)]
 #[test]
-fn variety_from_json() {
+fn params_from_json() {
     let js = json::parse(r#"
 {
     "beds": [
@@ -46,11 +62,13 @@ fn variety_from_json() {
     "varieties": [
         {
             "name": "lettuce",
-            "flags": [ ]
+            "flags": [ ],
+            "harvest_schedule": [ 0, 1, 2, 3 ]
         },
         {
             "name": "tomato",
-            "flags": [ "polytunnel" ]
+            "flags": [ "polytunnel" ],
+            "harvest_schedule": [ 0, 1, 2, 3 ]
         }
     ]
 }"#).expect("test is wrong");
@@ -62,4 +80,6 @@ fn variety_from_json() {
     assert_eq!(params.varieties.len(), 2);
     assert_eq!(params.varieties[1].name, "tomato");
     assert!(params.varieties[1].flags.has_all(&BED_FLAG_POLYTUNNEL));
+    assert_eq!(params.varieties[0].harvest_schedule.len(), 4);
+    assert_eq!(params.varieties[0].harvest_schedule[2], 2);
 }

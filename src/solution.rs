@@ -1,11 +1,11 @@
 use crate::params::Params;
-use crate::constant::{ NUM_BEDS, SEASON_LENGTH, SOLUTION_SIZE, WeekId, VarietyId };
+use crate::constant::{ SEASON_LENGTH, WeekId, VarietyId };
 use crate::harvest_plan::HarvestPlan;
 
-pub type Solution = [VarietyId; SOLUTION_SIZE ];
+pub type Solution = Vec<VarietyId>;
 
-pub fn new() -> Solution {
-    return [ 0; SOLUTION_SIZE ];
+pub fn new(params: &Params) -> Solution {
+    vec![ 0; params.genome_size() ]
 }
 
 pub fn to_harvest_plan(sol: &Solution, params: &Params) -> HarvestPlan {
@@ -14,7 +14,7 @@ pub fn to_harvest_plan(sol: &Solution, params: &Params) -> HarvestPlan {
     let mut harvest_plan = std::iter::repeat(vec![ 0; params.varieties.len() ])
         .take(SEASON_LENGTH)
         .collect::<Vec<_>>();
-    for bed in 0..NUM_BEDS {
+    for bed in 0..params.num_beds() {
         let mut week: WeekId = 0;
         for crop in 0..SEASON_LENGTH {
             let gene_id = bed * SEASON_LENGTH + crop;

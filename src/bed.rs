@@ -2,7 +2,7 @@ use std::convert::TryFrom;
 use json::JsonValue;
 use crate::common::*;
 
-pub const BED_FLAG_NONE: u8 = 0b0;
+pub const BED_FLAG_NONE: BedFlags = BedFlags(0b0);
 pub const BED_FLAG_POLYTUNNEL: BedFlags = BedFlags(0b1);
 
 #[derive(Clone, PartialEq, Debug)]
@@ -34,23 +34,31 @@ pub struct Bed {
 impl TryFrom<&JsonValue> for BedFlags {
     type Error = &'static str;
     fn try_from(item: &JsonValue) -> Result<Self, Self::Error> {
-        let arr = as_array(item)?;
-        let mut flags = BED_FLAG_NONE;
-        for flag_name in arr.iter() {
-            if flag_name == "polytunnel" {
-                flags |= BED_FLAG_POLYTUNNEL.0
-            }
+        match item {
+            JsonValue::Array(arr) => {
+                let mut flags = BED_FLAG_NONE.0;
+                for flag_name in arr.iter() {
+                    if flag_name == "polytunnel" {
+                        flags |= BED_FLAG_POLYTUNNEL.0
+                    }
+                }
+                Ok(BedFlags(flags))
+            },
+            _ => Ok(BED_FLAG_NONE)
         }
-        return Ok(BedFlags(flags));
     }
 }
 
 #[cfg(test)]
 #[test]
 fn bed_flags_from_json() {
-    let js = json::parse(r#"[ "polytunnel" ]"#).expect("test is wrong");
-    let bed_flags = BedFlags::try_from(&js).expect("failed to parse");
+    let mut js = json::parse(r#"[ "polytunnel" ]"#).expect("test is wrong");
+    let mut bed_flags = BedFlags::try_from(&js).expect("failed to parse");
     assert_eq!(bed_flags, BED_FLAG_POLYTUNNEL);
+
+    js = json::parse(r#"{}"#).expect("test is wrong");
+    bed_flags = BedFlags::try_from(&js).expect("failed to parse");
+    assert_eq!(bed_flags, BED_FLAG_NONE);
 }
 
 impl TryFrom<&JsonValue> for Bed {

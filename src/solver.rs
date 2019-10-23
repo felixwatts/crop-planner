@@ -1,7 +1,7 @@
 use crate::rand::Rand;
 use crate::params::Params;
 use crate::solution::{Solution};
-use crate::constant::{POPULATION_SIZE, SOLUTION_SIZE, SEASON_LENGTH, FIRST_BOX_WEEK, LAST_BOX_WEEK, NUM_BOXES, SolutionId, GeneId, VarietyId};
+use crate::constant::{POPULATION_SIZE, SEASON_LENGTH, FIRST_BOX_WEEK, LAST_BOX_WEEK, NUM_BOXES, SolutionId, GeneId, VarietyId};
 
 pub struct Solver {
     rand: Rand,
@@ -13,16 +13,24 @@ impl Solver {
 
     pub fn new(params: Params) -> Solver {
         let rand = Rand::new(&params);
+        let pop = vec!(crate::solution::new(&params); POPULATION_SIZE);
 
         let mut solver = Solver {
             rand: rand,
             params: params,
-            pop: vec!(crate::solution::new(); POPULATION_SIZE),
+            pop: pop,
         };
 
         for i in 0..POPULATION_SIZE {
             solver.rand.randomize_solution(&mut solver.pop[i]);
         }
+
+        // for x in &solver.pop {
+        //     for y in x {
+        //         print!("{}, ", y);
+        //     }
+        //     println!("");
+        // }
 
         // initial sort by fitness
         solver.step();
@@ -63,7 +71,7 @@ impl Solver {
     }
 
     fn cross(&mut self, mother_id: SolutionId, father_id: SolutionId, child: &mut Solution) {
-        for gene in 0..SOLUTION_SIZE {
+        for gene in 0..self.params.genome_size() {
             let source = match self.rand.random_parent() {
                 true => { mother_id }
                 false => { father_id }
@@ -83,9 +91,9 @@ impl Solver {
 
     pub fn step(&mut self) {
 
-        let mut next = vec!(crate::solution::new(); POPULATION_SIZE);
+        let mut next = vec!(crate::solution::new(&self.params); POPULATION_SIZE);
 
-        next[0] = self.get_best_solution();
+        next[0] = self.get_best_solution().clone();
 
         // build next generation by selection, crossover and mutation
         for i in 1..POPULATION_SIZE {
@@ -101,7 +109,7 @@ impl Solver {
         return self.score(&self.pop[POPULATION_SIZE-1]);
     }
 
-    pub fn get_best_solution(&self) -> Solution {
-        return self.pop[POPULATION_SIZE-1];
+    pub fn get_best_solution(&self) -> &Solution {
+        self.pop.last().expect("internal error")
     }
 }
