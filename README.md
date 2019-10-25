@@ -21,5 +21,11 @@ $> nano .harvest/params.json
 Once you are happy with the parameters, generate a new crop plan:
 
 ```
-harvest solve
+$> harvest solve
+```
+
+For more options and help, run harvest without arguments:
+
+```
+$> harvest
 ```
