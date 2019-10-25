@@ -1,7 +1,7 @@
 use std::convert::TryFrom;
 use json::JsonValue;
 use crate::common::*;
-use crate::bed::{ BED_FLAG_POLYTUNNEL, BedFlags };
+use crate::bed::{BedFlags, BED_FLAG_POLYTUNNEL};
 use crate::constant::{ SEASON_LENGTH, WeekRange, HarvestableUnits };
 
 #[derive(Clone)]

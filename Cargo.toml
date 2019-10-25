@@ -1,5 +1,5 @@
 [package]
-name = "crop-planner"
+name = "harvest"
 version = "0.1.0"
 authors = ["Felix Watts <felix@provenance.org>"]
 edition = "2018"
@@ -7,3 +7,7 @@ edition = "2018"
 [dependencies]
 rand = "0.7.2"
 json = "0.12.0"
+structopt = "0.3.3"
+chrono = "0.4.9"
+sha1 = "0.6.0"
+simple-error = "0.2.1"

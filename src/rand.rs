@@ -4,8 +4,8 @@ use rand::distributions::Uniform;
 use rand::distributions::WeightedIndex;
 use rand::distributions::Bernoulli;
 use crate::params::Params;
-use crate::solution::Solution;
-use crate::constant::{POPULATION_SIZE, SEASON_LENGTH, GeneId, VarietyId, SolutionId, WeekId};
+use crate::genome::Genome;
+use crate::constant::{POPULATION_SIZE, SEASON_LENGTH, GeneId, VarietyId, SolutionId};
 
 pub struct Rand {
     rng: ThreadRng,
@@ -58,16 +58,8 @@ impl Rand {
         return self.dist_selection.sample(&mut self.rng);
     }
 
-    pub fn randomize_gene(&mut self, genome: &mut Solution, gene: GeneId) {
-        let week = gene % SEASON_LENGTH;
+    pub fn random_variety(&mut self, week: usize) -> VarietyId {
         let i = self.dist_plantable_variety_by_week[week].sample(&mut self.rng);
-        let variety = self.plantable_varieties_by_week[week][i];
-        genome[gene] = variety;
-    }
-
-    pub fn randomize_solution(&mut self, genome: &mut Solution) {
-        for gene in 0..genome.len() {
-            self.randomize_gene(genome, gene);
-        }
+        self.plantable_varieties_by_week[week][i]
     }
 }

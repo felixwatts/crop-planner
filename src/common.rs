@@ -1,4 +1,6 @@
 use json::JsonValue;
+use std::fs;
+use std;
 
 pub fn as_object(thing: &JsonValue) -> Result<&json::object::Object, &'static str> {
     match thing {
@@ -27,4 +29,19 @@ pub fn as_int(thing: &JsonValue) -> Result<i32, &'static str> {
         JsonValue::Number(n) => Ok((*n).into()),
         _ => Err("Expected JSON string")
     }
+}
+
+pub fn as_usize(thing: &JsonValue) -> Result<usize, &'static str> {
+    match thing {
+        JsonValue::Number(n) => Ok((*n).into()),
+        _ => Err("Expected JSON string")
+    }
+}
+
+pub fn sha256_digest(path: &std::path::PathBuf) -> Result<std::string::String, std::io::Error> {
+    let mut file = fs::File::open(path)?;
+    let json = fs::read_to_string(path)?;
+    let mut hasher = sha1::Sha1::new();
+    hasher.update(json.as_ref());
+    Ok(hasher.digest().to_string())
 }
