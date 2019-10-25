@@ -5,7 +5,7 @@ pub type WeekId = usize;
 pub type WeekRange = usize;
 pub type HarvestableUnits = i32;
 
-pub const NUM_BOXES: i32 = 120;
+pub const NUM_BOXES: i32 = 200;
 pub const SEASON_LENGTH: WeekRange = 52;
 pub const POPULATION_SIZE: usize = 50;
 
