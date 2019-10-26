@@ -170,7 +170,7 @@ fn random_variety_satisfies_planting_schedule() {
 
 #[cfg(test)]
 #[test]
-fn rand_select_individual() {
+fn select_individual() {
     let params = Params{
         beds: vec![ crate::bed::Bed{
             name: "bed-1".to_string(),

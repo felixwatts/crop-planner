@@ -1,5 +1,4 @@
 use crate::constant::NUM_BOXES;
-use crate::constant::VarietyId;
 use crate::constant::SEASON_LENGTH;
 use crate::harvest_plan::HarvestPlan;
 use crate::bed_plan::BedPlan;
@@ -57,32 +56,20 @@ impl<'a> Phenome<'_> {
     pub fn get_harvest_plan(&self) -> HarvestPlan {
         // build the harvest plan, which tells us how many units of each variety
         // are harvestable in each week
+
         let mut harvest_plan = std::iter::repeat(vec![ 0; self.params.varieties.len() ])
             .take(SEASON_LENGTH)
             .collect::<Vec<_>>();
-        for bed in 0..self.params.num_beds() {
-            for planting_week in 0..SEASON_LENGTH {
-                let variety_id = self.get_variety(bed, planting_week);
-                let variety = &self.params.varieties[variety_id];
 
-                for growth_week in 1..variety.get_longevity() {
-                    let harvest_week = (planting_week+growth_week) % SEASON_LENGTH;
-
-
-                    if self.get_variety(bed, harvest_week) != 0 {
-                        break;
-                    }
-
-                    let harvest_units = variety.harvest_schedule[growth_week];
-                    harvest_plan[harvest_week][variety_id] += harvest_units;
+        for b in 0..self.params.num_beds() {
+            let bed = self.get_bed_plan(b);
+            for w in bed.iter() {
+                if w.harvest_units != 0 {
+                    harvest_plan[w.week][w.variety] += w.harvest_units;
                 }
             }
-        }
+        } 
 
-        return harvest_plan;
-    }
-
-    fn get_variety(&self, bed: usize, week: usize) -> VarietyId {
-        self.genes[(bed*SEASON_LENGTH)+week]
+        harvest_plan
     }
 }

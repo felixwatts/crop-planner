@@ -13,6 +13,8 @@ mod bed_plan;
 mod instructions;
 mod phenome;
 
+#[macro_use] extern crate lazy_static;
+
 use structopt::StructOpt;
 use crate::cli::*;
 use crate::repo::Repo;

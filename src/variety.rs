@@ -6,6 +6,7 @@ use crate::constant::{ SEASON_LENGTH, WeekRange, HarvestableUnits };
 use std::collections::HashMap;
 use std::error::Error;
 use simple_error::*;
+use regex::Regex;
 
 #[derive(Clone)]
 pub struct Variety {
@@ -36,24 +37,6 @@ fn try_parse_instructions(input: &JsonValue) -> Result<HashMap<String, String>, 
     Ok(result)
 }
 
-fn try_parse_planting_schedule(input: &str) -> Result<[ bool; SEASON_LENGTH ], &'static str> {
-    let mut result = [ false; SEASON_LENGTH ];
-    let parts = input.split(',');
-    let months = [ "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec" ];
-    for part in parts {
-        let index = months.iter().position(|&m| m == part);
-        match index {
-            Some(i) => {
-                for n in 0..4 {
-                    result[i*4+n] = true;
-                }
-            },
-            None => return Err("Failed to parse harvest schedule")
-        }
-    }
-    Ok(result)
-}
-
 impl TryFrom<&JsonValue> for Variety {
     type Error = Box<dyn Error>;
 
@@ -65,10 +48,36 @@ impl TryFrom<&JsonValue> for Variety {
             JsonValue::Null => Ok(vec![]),
             _ => bail!("Invalid requirements")
         }?;
+
+        let planting_schedule_str = as_string(&value_obj["planting_schedule"])?;
+        let mut planting_schedule = [false; SEASON_LENGTH];
+
+        lazy_static! {
+            static ref REGEX_PLANTING_SCHEDULE: Regex = Regex::new("([0-9]+)(-([0-9]+))?").unwrap();
+        }
+        for cap in REGEX_PLANTING_SCHEDULE.captures_iter(&planting_schedule_str) {
+            match cap.get(3) {
+                None => {
+                    let week = &cap[1].parse::<usize>()?;
+                    planting_schedule[*week] = true;
+                },
+                Some(_) => {
+                    let start_week = &cap[1].parse::<usize>()?;
+                    let end_week = &cap[3].parse::<usize>()?;
+                    if start_week >= end_week {
+                        bail!("Invalid planting schedule")
+                    }
+                    for week in *start_week..=*end_week {
+                        planting_schedule[week] = true;
+                    }
+                }
+            }
+
+            // println!("{} {} {} {}", &cap[0], &cap[1], &cap[2], &cap[3]);
+        }
+
         let harvest_schedule_arr = as_array(&value_obj["harvest_schedule"])?;
         let harvest_schedule = harvest_schedule_arr.iter().map(|j| as_int(j)).collect::<Result<Vec<_>, _>>()?;
-        let planting_schedule_str = as_string(&value_obj["planting_schedule"])?;
-        let planting_schedule = try_parse_planting_schedule(&planting_schedule_str)?;
         let instructions = try_parse_instructions(&value_obj["instructions"])?;
 
         Ok(Variety {
@@ -89,7 +98,7 @@ fn variety_from_json() {
     "name": "tomato",
     "requirements": [ "polytunnel" ],
     "harvest_schedule": [ 0, 1, 2, 3 ],
-    "planting_schedule": "apr,may",
+    "planting_schedule": "4-8,20-24,40",
     "instructions": {
         "-6": "Seed <variety> into a 64 tray and label it <label>",
         "-4": "Transplant <variety> from tray <label> into 20cm pots and label them <label>",
@@ -102,8 +111,17 @@ fn variety_from_json() {
     assert!(!variety.requirements.contains(&String::from("magic")));
     assert_eq!(variety.harvest_schedule.len(), 4);
     assert_eq!(variety.harvest_schedule[2], 2);
-    assert_eq!(variety.planting_schedule[11], false);
-    assert_eq!(variety.planting_schedule[12], true);
+    assert_eq!(variety.planting_schedule[3], false);
+    assert_eq!(variety.planting_schedule[4], true);
+    assert_eq!(variety.planting_schedule[8], true);
+    assert_eq!(variety.planting_schedule[9], false);
+    assert_eq!(variety.planting_schedule[19], false);
+    assert_eq!(variety.planting_schedule[20], true);
+    assert_eq!(variety.planting_schedule[24], true);
+    assert_eq!(variety.planting_schedule[25], false);
+    assert_eq!(variety.planting_schedule[39], false);
+    assert_eq!(variety.planting_schedule[40], true);
+    assert_eq!(variety.planting_schedule[41], false);
     assert_eq!(variety.instructions["-6"], "Seed <variety> into a 64 tray and label it <label>");
     assert_eq!(variety.instructions["0"], "Transplant <variety> from pots labelled <label> into bed <bed>");
 }

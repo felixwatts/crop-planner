@@ -70,7 +70,7 @@ fn params_from_json() {
             "name": "lettuce",
             "requirements": [ ],
             "harvest_schedule": [ 0, 1, 2, 3 ],
-            "planting_schedule": "apr,may",
+            "planting_schedule": "3,4,10-20",
             "instructions": {
                 "-2": "Seed <variety> into a 144 tray and label it <label>",
                 "-1": "Move tray <label> to harden off",
@@ -81,7 +81,7 @@ fn params_from_json() {
             "name": "tomato",
             "requirements": [ "polytunnel" ],
             "harvest_schedule": [ 0, 1, 2, 3 ],
-            "planting_schedule": "apr,may",
+            "planting_schedule": "3,4,10-20",
             "instructions": {
                 "-6": "Seed <variety> into a 64 tray and label it <label>",
                 "-4": "Transplant <variety> from tray <label> into 20cm pots and label them <label>",
@@ -469,7 +469,7 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
     "varieties": [
         {
             "name": "Lettuce-Indoor",
-            "planting_schedule": "mar,apr,may,jun,aug,sep,oct,nov,dec,jan,feb",
+            "planting_schedule": "0-51",
             "requirements": [ "polytunnel" ],
             "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8 ],
             "instructions": {
@@ -480,8 +480,8 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
             }
         },
         {
-            "name": "Spinach",
-            "planting_schedule": "mar,apr,may,jun,aug",
+            "name": "Spinach-Summer",
+            "planting_schedule": "9-20",
             "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8 ],
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
@@ -491,8 +491,19 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
             }
         },
         {
+            "name": "Spinach-Winter",
+            "planting_schedule": "40-48",
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8 ],
+            "instructions": {
+                "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
+                "-1": "Harden off <variety> tray <label>",
+                "0": "Transplant <variety> from tray <label> into bed <bed>",
+                "harvest": "Harvest <units> units of <variety> from bed <bed>"
+            }
+        },
+        {
             "name": "Radish",
-            "planting_schedule": "mar,apr,may,jun,jul,aug,sep",
+            "planting_schedule": "9-45",
             "harvest_schedule": [ 0, 0, 0, 0, 0, 20 ],
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
@@ -503,7 +514,7 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         },
         {
             "name": "Lettuce-Outdoor",
-            "planting_schedule": "mar,apr,may,jun,jul",
+            "planting_schedule": "8-30",
             "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5 ],
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
@@ -515,8 +526,8 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         {
             "name": "Tomato",
             "requirements": [ "polytunnel" ],
-            "planting_schedule": "mar,apr",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10 ],
+            "planting_schedule": "9-18",
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 20, 20, 20, 20, 20, 20, 20 ],
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
                 "-1": "Harden off <variety> tray <label>",
@@ -525,8 +536,19 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
             }
         },
         {
-            "name": "Carrot",
-            "planting_schedule": "mar,apr,may,jun,jul",
+            "name": "Carrot-Summer",
+            "planting_schedule": "7-14",
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 30, 30, 30 ],
+            "instructions": {
+                "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
+                "-1": "Harden off <variety> tray <label>",
+                "0": "Transplant <variety> from tray <label> into bed <bed>",
+                "harvest": "Harvest <units> units of <variety> from bed <bed>"
+            }
+        },
+        {
+            "name": "Carrot-Winter",
+            "planting_schedule": "35-45",
             "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 30, 30, 30 ],
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
@@ -536,8 +558,8 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
             }
         },
         {
-            "name": "Swede",
-            "planting_schedule": "apr,may,jun",
+            "name": "Swede-Summer",
+            "planting_schedule": "16-20",
             "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10 ],
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
@@ -547,8 +569,19 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
             }
         },
         {
+            "name": "Swede-Winter",
+            "planting_schedule": "30-40",
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10 ],
+            "instructions": {
+                "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
+                "-1": "Harden off <variety> tray <label>",
+                "0": "Transplant <variety> from tray <label> into bed <bed>",
+                "harvest": "Harvest <units> units of <variety> from bed <bed>"
+            }
+        },
+        {
             "name": "BBean",
-            "planting_schedule": "may,jun",
+            "planting_schedule": "20-28",
             "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10 ],
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
@@ -559,7 +592,7 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         },
         {
             "name": "Brocoli",
-            "planting_schedule": "sep,oct",
+            "planting_schedule": "36-42",
             "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10 ],
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
@@ -570,7 +603,7 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         },
         {
             "name": "SOnion",
-            "planting_schedule": "aug,sep,oct",
+            "planting_schedule": "32-44",
             "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10 ],
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",

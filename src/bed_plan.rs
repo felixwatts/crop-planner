@@ -37,7 +37,10 @@ impl BedPlan<'_> {
                             let mut i2 = i.replace("<variety>", &self.params.varieties[item.variety].name);
                             i2 = i2.replace("<label>", &format!("{}-{}", self.def.name, item.week));
                             i2 = i2.replace("<bed>", &self.def.name);
-                            let week = (item.week as i32) + w;
+                            let mut week = w + (item.week as i32);
+                            while week < 0 {
+                                week += SEASON_LENGTH as i32
+                            }
                             ins.add(week as usize, &i2)
                         },
                         None => ()
@@ -97,10 +100,10 @@ impl std::fmt::Display for BedPlan<'_> {
 
 #[derive(Debug)]
 pub struct BedWeek {
-    week: WeekId,
-    variety: VarietyId,
-    age: usize,
-    harvest_units: i32
+    pub week: WeekId,
+    pub variety: VarietyId,
+    pub age: usize,
+    pub harvest_units: i32
 }
 
 pub struct BedPlanIterator<'a> {
