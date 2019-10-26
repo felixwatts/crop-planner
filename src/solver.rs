@@ -6,12 +6,12 @@ use crate::constant::{POPULATION_SIZE, SEASON_LENGTH, NUM_BOXES, SolutionId, Gen
 pub struct Solver<'a> {
     rand: Rand,
     params: &'a Params,
-    pop: Vec<Genome>,
+    pop: Vec<Genome<'a>>,
 }
 
-impl Solver<'_> {
+impl<'a> Solver<'a> {
 
-    pub fn new<'a>(params: &'a Params) -> Solver<'a> {
+    pub fn new<'b>(params: &'b Params) -> Solver<'b> {
         let rand = Rand::new(&params);
         let pop = vec!(Genome::new(&params); POPULATION_SIZE);
 
@@ -31,7 +31,7 @@ impl Solver<'_> {
         solver
     }
 
-    fn spawn(&mut self, child: &mut Genome) {
+    fn spawn(&mut self, child: &mut Genome<'a>) {
         let mother_id = self.rand.select_individual();
         let father_id = self.rand.select_individual();
         Genome::cross(&self.pop[mother_id], &self.pop[father_id], child, &mut self.rand);
@@ -49,16 +49,16 @@ impl Solver<'_> {
             self.spawn(&mut next[i]);
         }
 
-        next.sort_by_cached_key(|p| p.score(&self.params));
+        next.sort_by_cached_key(|p| p.to_phenome().score());
 
         self.pop = next;
     }
 
     pub fn get_best_score(&self) -> i32 {
-        self.pop[POPULATION_SIZE-1].score(&self.params)
+        self.pop[POPULATION_SIZE-1].to_phenome().score()
     }
 
-    pub fn get_best_solution(&self) -> &Genome {
+    pub fn get_best_solution(&self) -> &Genome<'a> {
         self.pop.last().unwrap()
     }
 }

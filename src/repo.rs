@@ -12,7 +12,7 @@ use std::convert::{TryInto,TryFrom};
 pub struct Repo {
     path: std::path::PathBuf,
     params_hash: std::string::String,
-    solution: Option<Genome>
+    solution: Option<Vec<usize>>
 }
 
 impl Repo {
@@ -52,8 +52,9 @@ impl Repo {
         let params_hash = as_string(&repo_json["params_sha1"])?;
         self.params_hash = String::from(params_hash);
         if !repo_json["solution"].is_null() {
-            let genome = Genome::try_from(&repo_json["solution"])?;
-            self.solution = Some(genome);
+            let value_arr = as_array(&repo_json["solution"])?;
+            let genes = value_arr.iter().map(|j| as_usize(j)).collect::<Result<Vec<_>, _>>()?;
+            self.solution = Some(genes);
         }
         
         Ok(())
@@ -78,12 +79,12 @@ impl Repo {
     }
 
     pub fn put_solution(&mut self, sol: &Genome)-> Result<(), Box<dyn Error>> {
-        self.solution = Some(sol.clone());
+        self.solution = Some(sol.get_genes());
         self.params_hash = self.get_params_hash()?;
         Ok(())
     }
 
-    pub fn require_solution(&self) -> Result<&crate::genome::Genome, Box<dyn Error>> {
+    pub fn require_solution(&self) -> Result<&Vec<usize>, Box<dyn Error>> {
         self.require_initialized()?;
         match &self.solution {
             Some(sol) => {

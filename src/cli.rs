@@ -3,10 +3,16 @@ use structopt::StructOpt;
 #[derive(Debug, StructOpt)]
 pub struct ParamsPrint {
     #[structopt(short, long)]
-    pub bed: Option<usize>,
+    pub bed: Option<std::string::String>,
 
     #[structopt(short, long)]
-    pub week: Option<usize>,
+    pub week: Option<usize>
+}
+
+#[derive(Debug, StructOpt)]
+pub struct ParamsInstruct {
+    #[structopt(short, long)]
+    pub week: usize
 }
 
 #[derive(Debug, StructOpt)]
@@ -21,7 +27,10 @@ pub enum Cmd {
     Reset,
 
     #[structopt(name = "print")]
-    Print(ParamsPrint)
+    Print(ParamsPrint),
+
+    #[structopt(name = "ins")]
+    Instruct(ParamsInstruct)
 }
 
 #[derive(StructOpt, Debug)]

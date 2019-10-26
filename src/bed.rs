@@ -25,7 +25,7 @@ fn bed_flag_has_all() {
     assert!(!flags_a.has_all(&flags_b));
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Bed {
     pub name: String,
     pub flags: BedFlags,

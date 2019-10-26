@@ -9,6 +9,9 @@ mod params;
 mod common;
 mod cli;
 mod repo;
+mod bed_plan;
+mod instructions;
+mod phenome;
 
 use crate::constant::SEASON_LENGTH;
 use structopt::StructOpt;
@@ -25,7 +28,8 @@ fn main() {
         Cmd::Init => init(),
         Cmd::Solve => solve(),
         Cmd::Reset => reset(),
-        Cmd::Print(params) => print(&params)
+        Cmd::Print(params) => print(&params),
+        Cmd::Instruct(params) => instruct(&params)
     };
 
     match result {
@@ -47,10 +51,10 @@ fn reset() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn print(cmd: &crate::cli::ParamsPrint) -> Result<(), Box<dyn std::error::Error>> {
-    match cmd.bed {
+    match &cmd.bed {
         Some(bed) => match cmd.week {
-            Some(week) => print_bed_week(bed, week),
-            None => print_bed(bed)
+            Some(week) => print_bed_week(&bed, week),
+            None => print_bed(&bed)
         }
         None => match cmd.week {
             Some(week) => print_week(week),
@@ -59,25 +63,20 @@ fn print(cmd: &crate::cli::ParamsPrint) -> Result<(), Box<dyn std::error::Error>
     }
 }
 
-fn print_bed(bed: usize) -> Result<(), Box<dyn std::error::Error>> {
+fn print_bed(bed_name: &std::string::String) -> Result<(), Box<dyn std::error::Error>> {
     let repo = require_repo()?;
     let sol = repo.require_solution()?;
+    
     let params = repo.get_params()?;
-    println!("Bed {}", bed);
-    println!("{:<9}{:<9}", "Week", "Variety");
-    for week in 0..SEASON_LENGTH {
-        let variety = sol.get_variety(bed, week);
-        if variety != 0 {
-            let variety_name = &params.varieties[variety].name;
-            println!("{:<9}{:<9}", week, variety_name);
-        }
-    }
-    let stats = sol.get_bed_stats(bed, &params);
-    println!("Utilization: {:.0}%", stats.utilization() * 100.0);
+    let bed = require_bed(bed_name, &params)?;
+    let genome = crate::genome::Genome::from_genes(sol, &params);
+    let phenome = genome.to_phenome();
+    let bed_plan = phenome.get_bed_plan(bed);
+    println!("{}", bed_plan);
     Ok(())
 }
 
-fn print_bed_week(bed: usize, week: usize) -> Result<(), Box<dyn std::error::Error>> {
+fn print_bed_week(bed: &std::string::String, week: usize) -> Result<(), Box<dyn std::error::Error>> {
     println!("Bed {}, Week {}", bed, week);
     Ok(()) // TODO
 }
@@ -89,11 +88,37 @@ fn print_week(week: usize) -> Result<(), Box<dyn std::error::Error>> {
 
 fn print_solution() -> Result<(), Box<dyn std::error::Error>> {
     let repo = require_repo()?;
-    let sol = repo.require_solution()?;
+    let genes = repo.require_solution()?;
     let params = repo.get_params()?;
-    let harvest_plan = sol.to_harvest_plan(&params);
+    let genome = crate::genome::Genome::from_genes(genes, &params);
+    let harvest_plan = genome.to_phenome().get_harvest_plan();
     crate::harvest_plan::print_harvest_plan(&harvest_plan, &params);
     Ok(())
+}
+
+fn instruct(params_instruct: &ParamsInstruct) -> Result<(), Box<dyn std::error::Error>> {
+    let repo = require_repo()?;
+    let genes = repo.require_solution()?;
+    let params = repo.get_params()?;
+    let genome = crate::genome::Genome::from_genes(genes, &params);
+    let phenome = genome.to_phenome();
+    let instructions = phenome.get_instructions();    
+    let week_instructions = instructions.get(params_instruct.week);
+
+    println!("Tasks for week #{}", params_instruct.week);
+
+    for t in week_instructions.iter() {
+        println!("- {}", t);
+    }
+
+    Ok(())
+}
+
+fn require_bed(name: &std::string::String, params: &crate::params::Params) -> Result<usize, Box<dyn std::error::Error>> {
+    match params.get_bed(name) {
+        Some(i) => Ok(i),
+        None => bail!("Unknown bed")
+    }
 }
 
 fn require_repo() -> Result<crate::repo::Repo, Box<dyn std::error::Error>> {

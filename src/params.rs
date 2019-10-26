@@ -1,3 +1,4 @@
+use std::error::Error;
 use crate::bed::{Bed, BED_FLAG_NONE, BED_FLAG_POLYTUNNEL};
 use crate::variety::Variety;
 use crate::constant::SEASON_LENGTH;
@@ -12,7 +13,7 @@ pub struct Params {
 }
 
 impl TryFrom<&JsonValue> for Params {
-    type Error = &'static str;
+    type Error = Box<dyn Error>;
     
     fn try_from(value: &JsonValue) -> Result<Self, Self::Error> {
 
@@ -23,7 +24,8 @@ impl TryFrom<&JsonValue> for Params {
             name: String::from(""),
             flags: BED_FLAG_NONE,
             harvest_schedule: vec![ 0 ],
-            planting_schedule: [ true; SEASON_LENGTH ]
+            planting_schedule: [ true; SEASON_LENGTH ],
+            instructions: std::collections::HashMap::new()
         });
         let beds_json_array = as_array(&value_json_obj["beds"])?;
         let beds = beds_json_array.iter().map(|j| Bed::try_from(j)).collect::<Result<Vec<_>, _>>()?;
@@ -42,6 +44,10 @@ impl Params {
 
     pub fn num_beds(&self) -> usize {
         self.beds.len()
+    }
+
+    pub fn get_bed(&self, name: &str) -> Option<usize> {
+        self.beds.iter().position(|b| b.name == name)
     }
 }
 
@@ -65,13 +71,23 @@ fn params_from_json() {
             "name": "lettuce",
             "flags": [ ],
             "harvest_schedule": [ 0, 1, 2, 3 ],
-            "planting_schedule": "apr,may"
+            "planting_schedule": "apr,may",
+            "instructions": {
+                "-2": "Seed <variety> into a 144 tray and label it <label>",
+                "-1": "Move tray <label> to harden off",
+                "0": "Transplant <variety> from tray <label> into bed <bed>"
+            }
         },
         {
             "name": "tomato",
             "flags": [ "polytunnel" ],
             "harvest_schedule": [ 0, 1, 2, 3 ],
-            "planting_schedule": "apr,may"
+            "planting_schedule": "apr,may",
+            "instructions": {
+                "-6": "Seed <variety> into a 64 tray and label it <label>",
+                "-4": "Transplant <variety> from tray <label> into 20cm pots and label them <label>",
+                "0": "Transplant <variety> from pots labelled <label> into bed <bed>"
+            }
         }
     ]
 }"#).expect("test is wrong");
@@ -86,6 +102,8 @@ fn params_from_json() {
     assert!(params.varieties[2].flags.has_all(&BED_FLAG_POLYTUNNEL));
     assert_eq!(params.varieties[1].harvest_schedule.len(), 4);
     assert_eq!(params.varieties[1].harvest_schedule[2], 2);
+    assert_eq!(params.varieties[2].instructions["-6"], "Seed <variety> into a 64 tray and label it <label>");
+    assert_eq!(params.varieties[2].instructions["0"], "Transplant <variety> from pots labelled <label> into bed <bed>");
 }
 
 pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
@@ -126,6 +144,18 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
             "name": "~bA33",
             "flags": [ "polytunnel" ]
         },
+        {
+            "name": "~bA41",
+            "flags": [ "polytunnel" ]
+        },
+        {
+            "name": "~bA42",
+            "flags": [ "polytunnel" ]
+        },
+        {
+            "name": "~bA43",
+            "flags": [ "polytunnel" ]
+        },
 
         {
             "name": "~bB11",
@@ -163,6 +193,18 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
             "name": "~bB33",
             "flags": [ "polytunnel" ]
         },
+        {
+            "name": "~bB41",
+            "flags": [ "polytunnel" ]
+        },
+        {
+            "name": "~bB42",
+            "flags": [ "polytunnel" ]
+        },
+        {
+            "name": "~bB43",
+            "flags": [ "polytunnel" ]
+        },
 
         {
             "name": "~bC11"
@@ -190,6 +232,15 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         },
         {
             "name": "~bC33"
+        },
+        {
+            "name": "~bC41"
+        },
+        {
+            "name": "~bC42"
+        },
+        {
+            "name": "~bC43"
         },
 
         {
@@ -219,6 +270,15 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         {
             "name": "~bD33"
         },
+        {
+            "name": "~bD41"
+        },
+        {
+            "name": "~bD42"
+        },
+        {
+            "name": "~bD43"
+        },
 
         {
             "name": "~bE11"
@@ -246,6 +306,15 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         },
         {
             "name": "~bE33"
+        },
+        {
+            "name": "~bE41"
+        },
+        {
+            "name": "~bE42"
+        },
+        {
+            "name": "~bE43"
         },
 
         {
@@ -275,6 +344,15 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         {
             "name": "~bF33"
         },
+        {
+            "name": "~bF41"
+        },
+        {
+            "name": "~bF42"
+        },
+        {
+            "name": "~bF43"
+        },
 
         {
             "name": "~bG11"
@@ -302,6 +380,15 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         },
         {
             "name": "~bG33"
+        },
+        {
+            "name": "~bG41"
+        },
+        {
+            "name": "~bG42"
+        },
+        {
+            "name": "~bG43"
         },
 
         {
@@ -331,6 +418,15 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         {
             "name": "~bH33"
         },
+        {
+            "name": "~bH41"
+        },
+        {
+            "name": "~bH42"
+        },
+        {
+            "name": "~bH43"
+        },
 
         {
             "name": "~bI11"
@@ -358,54 +454,117 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         },
         {
             "name": "~bI33"
+        },
+        {
+            "name": "~bI41"
+        },
+        {
+            "name": "~bI42"
+        },
+        {
+            "name": "~bI43"
         }
     ],
     "varieties": [
         {
             "name": "Spinach",
             "planting_schedule": "mar,apr,may,jun,aug",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8 ]
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8 ],
+            "instructions": {
+                "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
+                "-1": "Harden off <variety> tray <label>",
+                "0": "Transplant <variety> from tray <label> into bed <bed>",
+                "harvest": "Harvest <units> units of <variety> from bed <bed>"
+            }
         },
         {
             "name": "Radish",
             "planting_schedule": "mar,apr,may,jun,jul,aug,sep",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 20 ]
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 20 ],
+            "instructions": {
+                "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
+                "-1": "Harden off <variety> tray <label>",
+                "0": "Transplant <variety> from tray <label> into bed <bed>",
+                "harvest": "Harvest <units> units of <variety> from bed <bed>"
+            }
         },
         {
             "name": "Lettuce",
             "planting_schedule": "mar,apr,may,jun,jul",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5 ]
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5 ],
+            "instructions": {
+                "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
+                "-1": "Harden off <variety> tray <label>",
+                "0": "Transplant <variety> from tray <label> into bed <bed>",
+                "harvest": "Harvest <units> units of <variety> from bed <bed>"
+            }
         },
         {
             "name": "Tomato",
             "flags": [ "polytunnel" ],
             "planting_schedule": "mar,apr",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10 ]
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10 ],
+            "instructions": {
+                "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
+                "-1": "Harden off <variety> tray <label>",
+                "0": "Transplant <variety> from tray <label> into bed <bed>",
+                "harvest": "Harvest <units> units of <variety> from bed <bed>"
+            }
         },
         {
             "name": "Carrot",
             "planting_schedule": "mar,apr,may,jun,jul",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 30, 30, 30 ]
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 30, 30, 30 ],
+            "instructions": {
+                "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
+                "-1": "Harden off <variety> tray <label>",
+                "0": "Transplant <variety> from tray <label> into bed <bed>",
+                "harvest": "Harvest <units> units of <variety> from bed <bed>"
+            }
         },
         {
             "name": "Swede",
             "planting_schedule": "apr,may,jun",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10 ]
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10 ],
+            "instructions": {
+                "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
+                "-1": "Harden off <variety> tray <label>",
+                "0": "Transplant <variety> from tray <label> into bed <bed>",
+                "harvest": "Harvest <units> units of <variety> from bed <bed>"
+            }
         },
         {
             "name": "BBean",
             "planting_schedule": "may,jun",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10 ]
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10 ],
+            "instructions": {
+                "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
+                "-1": "Harden off <variety> tray <label>",
+                "0": "Transplant <variety> from tray <label> into bed <bed>",
+                "harvest": "Harvest <units> units of <variety> from bed <bed>"
+            }
         },
         {
             "name": "Brocoli",
             "planting_schedule": "sep,oct",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10 ]
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10 ],
+            "instructions": {
+                "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
+                "-1": "Harden off <variety> tray <label>",
+                "0": "Transplant <variety> from tray <label> into bed <bed>",
+                "harvest": "Harvest <units> units of <variety> from bed <bed>"
+            }
         },
         {
             "name": "SOnion",
             "planting_schedule": "aug,sep,oct",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10 ]
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10 ],
+            "instructions": {
+                "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
+                "-1": "Harden off <variety> tray <label>",
+                "0": "Transplant <variety> from tray <label> into bed <bed>",
+                "harvest": "Harvest <units> units of <variety> from bed <bed>"
+            }
         }
     ]
 }"#;

@@ -3,6 +3,8 @@ use json::JsonValue;
 use crate::common::*;
 use crate::bed::{BedFlags, BED_FLAG_POLYTUNNEL};
 use crate::constant::{ SEASON_LENGTH, WeekRange, HarvestableUnits };
+use std::collections::HashMap;
+use std::error::Error;
 
 #[derive(Clone)]
 pub struct Variety {
@@ -10,6 +12,21 @@ pub struct Variety {
     pub planting_schedule: [ bool; SEASON_LENGTH ],
     pub harvest_schedule: Vec<HarvestableUnits>,
     pub flags: BedFlags,
+    pub instructions: HashMap<String, String>
+}
+
+fn try_parse_instructions(input: &JsonValue) -> Result<HashMap<String, String>, Box<dyn Error>> {
+    let input_obj = as_object(input)?;
+
+    let mut result = HashMap::new();
+
+    for item in input_obj.iter() {
+        let key = std::string::String::from(item.0);
+        let val = as_string(item.1)?;
+        result.insert(key, std::string::String::from(val));
+    }
+
+    Ok(result)
 }
 
 fn try_parse_planting_schedule(input: &str) -> Result<[ bool; SEASON_LENGTH ], &'static str> {
@@ -31,7 +48,7 @@ fn try_parse_planting_schedule(input: &str) -> Result<[ bool; SEASON_LENGTH ], &
 }
 
 impl TryFrom<&JsonValue> for Variety {
-    type Error = &'static str;
+    type Error = Box<dyn Error>;
 
     fn try_from(value: &JsonValue) -> Result<Self, Self::Error> {
         let value_obj = as_object(&value)?;
@@ -41,12 +58,14 @@ impl TryFrom<&JsonValue> for Variety {
         let harvest_schedule = harvest_schedule_arr.iter().map(|j| as_int(j)).collect::<Result<Vec<_>, _>>()?;
         let planting_schedule_str = as_string(&value_obj["planting_schedule"])?;
         let planting_schedule = try_parse_planting_schedule(&planting_schedule_str)?;
+        let instructions = try_parse_instructions(&value_obj["instructions"])?;
 
         Ok(Variety {
             name: String::from(name),
             flags: flags,
             planting_schedule: planting_schedule,
             harvest_schedule: harvest_schedule,
+            instructions: instructions
         })
     }
 }
@@ -59,7 +78,12 @@ fn variety_from_json() {
     "name": "tomato",
     "flags": [ "polytunnel" ],
     "harvest_schedule": [ 0, 1, 2, 3 ],
-    "planting_schedule": "apr,may"
+    "planting_schedule": "apr,may",
+    "instructions": {
+        "-6": "Seed <variety> into a 64 tray and label it <label>",
+        "-4": "Transplant <variety> from tray <label> into 20cm pots and label them <label>",
+        "0": "Transplant <variety> from pots labelled <label> into bed <bed>"
+    }
 }"#).expect("test is wrong");
     let variety = Variety::try_from(&js).expect("failed to parse");
     assert_eq!(variety.name, "tomato");
@@ -68,6 +92,8 @@ fn variety_from_json() {
     assert_eq!(variety.harvest_schedule[2], 2);
     assert_eq!(variety.planting_schedule[11], false);
     assert_eq!(variety.planting_schedule[12], true);
+    assert_eq!(variety.instructions["-6"], "Seed <variety> into a 64 tray and label it <label>");
+    assert_eq!(variety.instructions["0"], "Transplant <variety> from pots labelled <label> into bed <bed>");
 }
 
 impl Variety {
