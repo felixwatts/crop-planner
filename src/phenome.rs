@@ -5,7 +5,6 @@ use crate::harvest_plan::HarvestPlan;
 use crate::bed_plan::BedPlan;
 use crate::instructions::Instructions;
 use crate::params::Params;
-use crate::genome::Genome;
 use std::convert::TryInto;
 
 pub struct Phenome<'a> {

@@ -13,7 +13,6 @@ mod bed_plan;
 mod instructions;
 mod phenome;
 
-use crate::constant::SEASON_LENGTH;
 use structopt::StructOpt;
 use crate::cli::*;
 use crate::repo::Repo;
@@ -137,7 +136,6 @@ fn solve() -> Result<(), Box<dyn std::error::Error>> {
     let mut solver = solver::Solver::new(&params);
 
     let mut best_score = std::i32::MIN;
-    let mut gen = 0;
     let mut gens_without_improvement = 0;
 
     loop {
@@ -154,22 +152,15 @@ fn solve() -> Result<(), Box<dyn std::error::Error>> {
             best_score = score;
             gens_without_improvement = 0;
 
-            // let best_solution = solver.get_best_solution();
-            // let harvest_plan = crate::solution::to_harvest_plan(&best_solution, &params);
-            // crate::harvest_plan::print_harvest_plan(&harvest_plan, &params);
-            // println!("gen: {} score: {}", gen, best_score);
-
             print!(".");
-            std::io::stdout().flush();
+            std::io::stdout().flush()?;
             
         } else {
             gens_without_improvement += 1;
         }
-
-        gen += 1;
     };
 
-    repo.put_solution(solver.get_best_solution());
+    repo.put_solution(solver.get_best_solution())?;
     repo.save()?;
 
     println!("");

@@ -4,13 +4,11 @@ use rand::distributions::Uniform;
 use rand::distributions::WeightedIndex;
 use rand::distributions::Bernoulli;
 use crate::params::Params;
-use crate::genome::Genome;
 use crate::constant::{POPULATION_SIZE, SEASON_LENGTH, GeneId, VarietyId, SolutionId};
 
 pub struct Rand {
     rng: ThreadRng,
     dist_gene: Uniform<GeneId>,
-    dist_variety: Uniform<VarietyId>,
     dist_selection: WeightedIndex<SolutionId>,
     dist_parent: Bernoulli,
     plantable_varieties_by_week: Vec<Vec<VarietyId>>,
@@ -38,7 +36,6 @@ impl Rand {
         return Rand{
             rng: rand::thread_rng(),
             dist_gene: Uniform::from(0..params.genome_size()),
-            dist_variety: Uniform::from(0..(params.varieties.len())),
             dist_selection: WeightedIndex::new(weights).unwrap(),
             dist_parent: Bernoulli::new(0.5).unwrap(),
             plantable_varieties_by_week: plantable_varieties_by_week,

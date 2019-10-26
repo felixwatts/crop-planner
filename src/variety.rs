@@ -1,7 +1,7 @@
 use std::convert::TryFrom;
 use json::JsonValue;
 use crate::common::*;
-use crate::bed::{BedFlags, BED_FLAG_POLYTUNNEL};
+use crate::bed::{BedFlags};
 use crate::constant::{ SEASON_LENGTH, WeekRange, HarvestableUnits };
 use std::collections::HashMap;
 use std::error::Error;
@@ -87,7 +87,7 @@ fn variety_from_json() {
 }"#).expect("test is wrong");
     let variety = Variety::try_from(&js).expect("failed to parse");
     assert_eq!(variety.name, "tomato");
-    assert!(variety.flags.has_all(&BED_FLAG_POLYTUNNEL));
+    assert!(variety.flags.has_all(&crate::bed::BED_FLAG_POLYTUNNEL));
     assert_eq!(variety.harvest_schedule.len(), 4);
     assert_eq!(variety.harvest_schedule[2], 2);
     assert_eq!(variety.planting_schedule[11], false);

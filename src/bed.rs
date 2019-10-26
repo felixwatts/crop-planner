@@ -9,6 +9,7 @@ pub const BED_FLAG_POLYTUNNEL: BedFlags = BedFlags(0b1);
 pub struct BedFlags(pub u8);
 
 impl BedFlags {
+    #[cfg(test)]
     pub fn has_all(&self, flags: &BedFlags) -> bool {
         (flags.0 & self.0) == flags.0
     }

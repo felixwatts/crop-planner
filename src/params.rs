@@ -1,5 +1,5 @@
 use std::error::Error;
-use crate::bed::{Bed, BED_FLAG_NONE, BED_FLAG_POLYTUNNEL};
+use crate::bed::{Bed, BED_FLAG_NONE};
 use crate::variety::Variety;
 use crate::constant::SEASON_LENGTH;
 use crate::common::*;
@@ -94,12 +94,12 @@ fn params_from_json() {
     let params = Params::try_from(&js).expect("failed to parse");
     assert_eq!(params.beds.len(), 2);
     assert_eq!(params.beds[1].name, "~b01");
-    assert!(params.beds[1].flags.has_all(&BED_FLAG_POLYTUNNEL));
+    assert!(params.beds[1].flags.has_all(&crate::bed::BED_FLAG_POLYTUNNEL));
 
     assert_eq!(params.varieties.len(), 3);
     assert_eq!(params.varieties[0].name, "");
     assert_eq!(params.varieties[2].name, "tomato");
-    assert!(params.varieties[2].flags.has_all(&BED_FLAG_POLYTUNNEL));
+    assert!(params.varieties[2].flags.has_all(&crate::bed::BED_FLAG_POLYTUNNEL));
     assert_eq!(params.varieties[1].harvest_schedule.len(), 4);
     assert_eq!(params.varieties[1].harvest_schedule[2], 2);
     assert_eq!(params.varieties[2].instructions["-6"], "Seed <variety> into a 64 tray and label it <label>");

@@ -1,7 +1,7 @@
 use crate::rand::Rand;
 use crate::params::Params;
 use crate::genome::Genome;
-use crate::constant::{POPULATION_SIZE, SEASON_LENGTH, NUM_BOXES, SolutionId, GeneId, VarietyId};
+use crate::constant::{POPULATION_SIZE};
 
 pub struct Solver<'a> {
     rand: Rand,

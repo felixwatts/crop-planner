@@ -5,8 +5,7 @@ use crate::common::*;
 use simple_error::*;
 use json::object;
 use crate::params::Params;
-use chrono::Utc;
-use std::convert::{TryInto,TryFrom};
+use std::convert::{TryFrom};
 
 #[derive(Debug)]
 pub struct Repo {
@@ -101,7 +100,7 @@ impl Repo {
     pub fn require_no_solution(&self) -> Result<(), Box<dyn Error>> {
         self.require_initialized()?;
         match &self.solution {
-            Some(sol) => {
+            Some(_) => {
                 match self.is_params_unchanged() {
                     Ok(true) => bail!("Already solved. Try 'harvest reset'"),
                     Ok(false) => Ok(()),
@@ -152,7 +151,7 @@ impl Repo {
 #[test]
 fn repo_init() {
     let mut dir = std::env::temp_dir();
-    dir.push(format!("harvest-test-{}", Utc::now().timestamp()));
+    dir.push(format!("harvest-test-{}", chrono::Utc::now().timestamp()));
     let mut subject = Repo::new(&dir);
     subject.init().expect("init failed");
     subject.init().expect_err("double init");

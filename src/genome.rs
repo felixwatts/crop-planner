@@ -1,12 +1,7 @@
 use crate::phenome::Phenome;
-use crate::constant::NUM_BOXES;
 use crate::params::Params;
-use crate::constant::{ SEASON_LENGTH, WeekId, VarietyId };
-use crate::harvest_plan::HarvestPlan;
-use std::convert::{TryInto, TryFrom};
-use json::JsonValue;
-use crate::common::*;
-use crate::bed_plan::BedPlan;
+use crate::constant::{ SEASON_LENGTH, VarietyId };
+
 
 #[derive(Clone)]
 pub struct Genome<'a> {
@@ -69,15 +64,3 @@ impl std::convert::Into<json::JsonValue> for Genome<'_> {
         self.genes.clone().into()
     }
 }
-
-// pub fn print_solution(sol: &Genome, params: &Params) {
-//     for bed in 0..params.beds.len() {
-//         for crop in 0..SEASON_LENGTH {
-//             let gene_id = bed * SEASON_LENGTH + crop;
-//             let variety_id = sol[gene_id];
-//             let variety = &params.varieties[variety_id];
-//             print!("[{}] ", variety.name);
-//         }
-//         println!("");
-//     }
-// }
