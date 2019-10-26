@@ -1,18 +1,25 @@
+use crate::bed::Bed;
 use std::convert::TryFrom;
 use json::JsonValue;
 use crate::common::*;
-use crate::bed::{BedFlags};
 use crate::constant::{ SEASON_LENGTH, WeekRange, HarvestableUnits };
 use std::collections::HashMap;
 use std::error::Error;
+use simple_error::*;
 
 #[derive(Clone)]
 pub struct Variety {
     pub name: String,
     pub planting_schedule: [ bool; SEASON_LENGTH ],
     pub harvest_schedule: Vec<HarvestableUnits>,
-    pub flags: BedFlags,
+    pub requirements: Vec<String>,
     pub instructions: HashMap<String, String>
+}
+
+impl Variety {
+    pub fn are_requirements_met(&self, bed: &Bed) -> bool {
+        self.requirements.iter().all(|r| bed.properties.contains(r))
+    }
 }
 
 fn try_parse_instructions(input: &JsonValue) -> Result<HashMap<String, String>, Box<dyn Error>> {
@@ -53,7 +60,11 @@ impl TryFrom<&JsonValue> for Variety {
     fn try_from(value: &JsonValue) -> Result<Self, Self::Error> {
         let value_obj = as_object(&value)?;
         let name = as_string(&value_obj["name"])?;
-        let flags = BedFlags::try_from(&value_obj["flags"])?;
+        let requirements = match &value_obj["requirements"] {
+            JsonValue::Array(arr) => arr.iter().map(|p| as_string(p)).collect::<Result<Vec<_>,_>>(),
+            JsonValue::Null => Ok(vec![]),
+            _ => bail!("Invalid requirements")
+        }?;
         let harvest_schedule_arr = as_array(&value_obj["harvest_schedule"])?;
         let harvest_schedule = harvest_schedule_arr.iter().map(|j| as_int(j)).collect::<Result<Vec<_>, _>>()?;
         let planting_schedule_str = as_string(&value_obj["planting_schedule"])?;
@@ -62,7 +73,7 @@ impl TryFrom<&JsonValue> for Variety {
 
         Ok(Variety {
             name: String::from(name),
-            flags: flags,
+            requirements: requirements,
             planting_schedule: planting_schedule,
             harvest_schedule: harvest_schedule,
             instructions: instructions
@@ -76,7 +87,7 @@ fn variety_from_json() {
     let js = json::parse(r#"
 {
     "name": "tomato",
-    "flags": [ "polytunnel" ],
+    "requirements": [ "polytunnel" ],
     "harvest_schedule": [ 0, 1, 2, 3 ],
     "planting_schedule": "apr,may",
     "instructions": {
@@ -87,7 +98,8 @@ fn variety_from_json() {
 }"#).expect("test is wrong");
     let variety = Variety::try_from(&js).expect("failed to parse");
     assert_eq!(variety.name, "tomato");
-    assert!(variety.flags.has_all(&crate::bed::BED_FLAG_POLYTUNNEL));
+    assert!(variety.requirements.contains(&String::from("polytunnel")));
+    assert!(!variety.requirements.contains(&String::from("magic")));
     assert_eq!(variety.harvest_schedule.len(), 4);
     assert_eq!(variety.harvest_schedule[2], 2);
     assert_eq!(variety.planting_schedule[11], false);

@@ -55,7 +55,8 @@ impl Genome<'_> {
 
     fn randomize_gene(&mut self, gene: usize, rand: &mut crate::rand::Rand) {
         let week = gene % SEASON_LENGTH;
-        self.genes[gene] = rand.random_variety(week);
+        let bed = gene / SEASON_LENGTH;
+        self.genes[gene] = rand.random_variety(week, bed).or(Some(0)).unwrap();
     }
 }
 

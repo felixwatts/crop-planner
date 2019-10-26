@@ -29,7 +29,7 @@ pub enum Cmd {
     #[structopt(name = "print")]
     Print(ParamsPrint),
 
-    #[structopt(name = "ins")]
+    #[structopt(name = "tasks")]
     Instruct(ParamsInstruct)
 }
 

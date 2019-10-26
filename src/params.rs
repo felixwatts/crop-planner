@@ -1,5 +1,5 @@
 use std::error::Error;
-use crate::bed::{Bed, BED_FLAG_NONE};
+use crate::bed::Bed;
 use crate::variety::Variety;
 use crate::constant::SEASON_LENGTH;
 use crate::common::*;
@@ -22,7 +22,7 @@ impl TryFrom<&JsonValue> for Params {
         let mut varieties = varieties_json_array.iter().map(|j| Variety::try_from(j)).collect::<Result<Vec<_>, _>>()?;
         varieties.insert(0, Variety{
             name: String::from(""),
-            flags: BED_FLAG_NONE,
+            requirements: vec![],
             harvest_schedule: vec![ 0 ],
             planting_schedule: [ true; SEASON_LENGTH ],
             instructions: std::collections::HashMap::new()
@@ -58,18 +58,17 @@ fn params_from_json() {
 {
     "beds": [
         {
-            "name": "~b00",
-            "flags": [  ]
+            "name": "~b00"
         },
         {
             "name": "~b01",
-            "flags": [ "polytunnel" ]
+            "properties": [ "polytunnel" ]
         }
     ],
     "varieties": [
         {
             "name": "lettuce",
-            "flags": [ ],
+            "requirements": [ ],
             "harvest_schedule": [ 0, 1, 2, 3 ],
             "planting_schedule": "apr,may",
             "instructions": {
@@ -80,7 +79,7 @@ fn params_from_json() {
         },
         {
             "name": "tomato",
-            "flags": [ "polytunnel" ],
+            "requirements": [ "polytunnel" ],
             "harvest_schedule": [ 0, 1, 2, 3 ],
             "planting_schedule": "apr,may",
             "instructions": {
@@ -94,12 +93,14 @@ fn params_from_json() {
     let params = Params::try_from(&js).expect("failed to parse");
     assert_eq!(params.beds.len(), 2);
     assert_eq!(params.beds[1].name, "~b01");
-    assert!(params.beds[1].flags.has_all(&crate::bed::BED_FLAG_POLYTUNNEL));
+    assert!(params.beds[1].properties.contains(&String::from("polytunnel")));
+    assert!(!params.beds[1].properties.contains(&String::from("magic")));
 
     assert_eq!(params.varieties.len(), 3);
     assert_eq!(params.varieties[0].name, "");
     assert_eq!(params.varieties[2].name, "tomato");
-    assert!(params.varieties[2].flags.has_all(&crate::bed::BED_FLAG_POLYTUNNEL));
+    assert!(params.varieties[2].requirements.contains(&String::from("polytunnel")));
+    assert!(!params.varieties[2].requirements.contains(&String::from("magic")));
     assert_eq!(params.varieties[1].harvest_schedule.len(), 4);
     assert_eq!(params.varieties[1].harvest_schedule[2], 2);
     assert_eq!(params.varieties[2].instructions["-6"], "Seed <variety> into a 64 tray and label it <label>");
@@ -110,100 +111,100 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
     "beds": [
         {
             "name": "~bA11",
-            "flags": [ "polytunnel" ]
+            "properties": [ "polytunnel" ]
         },
         {
             "name": "~bA12",
-            "flags": [ "polytunnel" ]
+            "properties": [ "polytunnel" ]
         },
         {
             "name": "~bA13",
-            "flags": [ "polytunnel" ]
+            "properties": [ "polytunnel" ]
         },
         {
             "name": "~bA21",
-            "flags": [ "polytunnel" ]
+            "properties": [ "polytunnel" ]
         },
         {
             "name": "~bA22",
-            "flags": [ "polytunnel" ]
+            "properties": [ "polytunnel" ]
         },
         {
             "name": "~bA23",
-            "flags": [ "polytunnel" ]
+            "properties": [ "polytunnel" ]
         },
         {
             "name": "~bA31",
-            "flags": [ "polytunnel" ]
+            "properties": [ "polytunnel" ]
         },
         {
             "name": "~bA32",
-            "flags": [ "polytunnel" ]
+            "properties": [ "polytunnel" ]
         },
         {
             "name": "~bA33",
-            "flags": [ "polytunnel" ]
+            "properties": [ "polytunnel" ]
         },
         {
             "name": "~bA41",
-            "flags": [ "polytunnel" ]
+            "properties": [ "polytunnel" ]
         },
         {
             "name": "~bA42",
-            "flags": [ "polytunnel" ]
+            "properties": [ "polytunnel" ]
         },
         {
             "name": "~bA43",
-            "flags": [ "polytunnel" ]
+            "properties": [ "polytunnel" ]
         },
 
         {
             "name": "~bB11",
-            "flags": [ "polytunnel" ]
+            "properties": [ "polytunnel" ]
         },
         {
             "name": "~bB12",
-            "flags": [ "polytunnel" ]
+            "properties": [ "polytunnel" ]
         },
         {
             "name": "~bB13",
-            "flags": [ "polytunnel" ]
+            "properties": [ "polytunnel" ]
         },
         {
             "name": "~bB21",
-            "flags": [ "polytunnel" ]
+            "properties": [ "polytunnel" ]
         },
         {
             "name": "~bB22",
-            "flags": [ "polytunnel" ]
+            "properties": [ "polytunnel" ]
         },
         {
             "name": "~bB23",
-            "flags": [ "polytunnel" ]
+            "properties": [ "polytunnel" ]
         },
         {
             "name": "~bB31",
-            "flags": [ "polytunnel" ]
+            "properties": [ "polytunnel" ]
         },
         {
             "name": "~bB32",
-            "flags": [ "polytunnel" ]
+            "properties": [ "polytunnel" ]
         },
         {
             "name": "~bB33",
-            "flags": [ "polytunnel" ]
+            "properties": [ "polytunnel" ]
         },
         {
             "name": "~bB41",
-            "flags": [ "polytunnel" ]
+            "properties": [ "polytunnel" ]
         },
         {
             "name": "~bB42",
-            "flags": [ "polytunnel" ]
+            "properties": [ "polytunnel" ]
         },
         {
             "name": "~bB43",
-            "flags": [ "polytunnel" ]
+            "properties": [ "polytunnel" ]
         },
 
         {
@@ -467,6 +468,18 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
     ],
     "varieties": [
         {
+            "name": "Lettuce-Indoor",
+            "planting_schedule": "mar,apr,may,jun,aug,sep,oct,nov,dec,jan,feb",
+            "requirements": [ "polytunnel" ],
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8 ],
+            "instructions": {
+                "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
+                "-1": "Harden off <variety> tray <label>",
+                "0": "Transplant <variety> from tray <label> into bed <bed>",
+                "harvest": "Harvest <units> units of <variety> from bed <bed>"
+            }
+        },
+        {
             "name": "Spinach",
             "planting_schedule": "mar,apr,may,jun,aug",
             "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8 ],
@@ -489,7 +502,7 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
             }
         },
         {
-            "name": "Lettuce",
+            "name": "Lettuce-Outdoor",
             "planting_schedule": "mar,apr,may,jun,jul",
             "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5 ],
             "instructions": {
@@ -501,7 +514,7 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         },
         {
             "name": "Tomato",
-            "flags": [ "polytunnel" ],
+            "requirements": [ "polytunnel" ],
             "planting_schedule": "mar,apr",
             "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10 ],
             "instructions": {

@@ -11,35 +11,49 @@ pub struct Rand {
     dist_gene: Uniform<GeneId>,
     dist_selection: WeightedIndex<SolutionId>,
     dist_parent: Bernoulli,
-    plantable_varieties_by_week: Vec<Vec<VarietyId>>,
-    dist_plantable_variety_by_week: Vec<Uniform<VarietyId>>,
+    plantable_varieties_by_week_by_bed: Vec<Vec<Vec<VarietyId>>>,
+    dist_plantable_variety_by_week_by_bed: Vec<Vec<Option<Uniform<VarietyId>>>>,
 }
 
 impl Rand {
     pub fn new(params: &Params) -> Rand {
         let weights = 1..(POPULATION_SIZE+1);
-        let mut plantable_varieties_by_week = std::iter::repeat(vec![ ])
-            .take(SEASON_LENGTH)
-            .collect::<Vec<_>>();
-        for week in 0..SEASON_LENGTH {
-            for variety in 0..params.varieties.len() {
-                if params.varieties[variety].planting_schedule[week] {
-                    plantable_varieties_by_week[week].push(variety);
+
+        let mut plantable_varieties_by_week_by_bed = Vec::<Vec<Vec<VarietyId>>>::new();
+        let mut dist_plantable_variety_by_week_by_bed = Vec::<Vec<Option<Uniform<VarietyId>>>>::new();
+
+        for bed in 0..params.beds.len() {
+            let mut plantable_varieties_by_week = std::iter::repeat(vec![ ])
+                .take(SEASON_LENGTH)
+                .collect::<Vec<_>>();
+
+            for week in 0..SEASON_LENGTH {
+                for variety in 0..params.varieties.len() {
+                    if params.varieties[variety].planting_schedule[week] {
+
+                        if params.varieties[variety].are_requirements_met(&params.beds[bed]) {
+                            plantable_varieties_by_week[week].push(variety);
+                        }
+                    }
                 }
             }
-        } 
-        let dist_plantable_variety_by_week = plantable_varieties_by_week
-            .iter()
-            .map(|w| Uniform::from(0..w.len()))
-            .collect::<Vec<_>>();
+
+            let dist_plantable_variety_by_week = plantable_varieties_by_week
+                .iter()
+                .map(|w| if w.len() == 0 { None } else { Some(Uniform::from(0..w.len())) })
+                .collect::<Vec<_>>();
+
+            plantable_varieties_by_week_by_bed.push(plantable_varieties_by_week);
+            dist_plantable_variety_by_week_by_bed.push(dist_plantable_variety_by_week);
+        }
 
         return Rand{
             rng: rand::thread_rng(),
             dist_gene: Uniform::from(0..params.genome_size()),
             dist_selection: WeightedIndex::new(weights).unwrap(),
             dist_parent: Bernoulli::new(0.5).unwrap(),
-            plantable_varieties_by_week: plantable_varieties_by_week,
-            dist_plantable_variety_by_week: dist_plantable_variety_by_week
+            plantable_varieties_by_week_by_bed: plantable_varieties_by_week_by_bed,
+            dist_plantable_variety_by_week_by_bed: dist_plantable_variety_by_week_by_bed
         }
     }
 
@@ -55,8 +69,134 @@ impl Rand {
         return self.dist_selection.sample(&mut self.rng);
     }
 
-    pub fn random_variety(&mut self, week: usize) -> VarietyId {
-        let i = self.dist_plantable_variety_by_week[week].sample(&mut self.rng);
-        self.plantable_varieties_by_week[week][i]
+    pub fn random_variety(&mut self, week: usize, bed: usize) -> Option<VarietyId> {
+        match self.dist_plantable_variety_by_week_by_bed[bed][week] {
+            Some(dist) => {
+                let i = dist.sample(&mut self.rng);
+                Some(self.plantable_varieties_by_week_by_bed[bed][week][i])
+            },
+            None => None
+        }
     }
+}
+
+#[cfg(test)]
+#[test]
+fn random_variety_meets_requirements() {
+    let params = Params{
+        beds: vec![ crate::bed::Bed{
+            name: "bed-0".to_string(),
+            properties: vec![ "rq-1".to_string() ]
+        } ],
+        varieties: vec![ 
+            crate::variety::Variety{
+                name: "var-0".to_string(),
+                harvest_schedule: vec![],
+                planting_schedule: [true;SEASON_LENGTH],
+                instructions: std::collections::HashMap::new(),
+                requirements: vec![ ]
+            },
+            crate::variety::Variety{
+                name: "var-1".to_string(),
+                harvest_schedule: vec![],
+                planting_schedule: [true;SEASON_LENGTH],
+                instructions: std::collections::HashMap::new(),
+                requirements: vec![ "rq-1".to_string() ]
+            },
+            crate::variety::Variety{
+                name: "var-2".to_string(),
+                harvest_schedule: vec![],
+                planting_schedule: [true;SEASON_LENGTH],
+                instructions: std::collections::HashMap::new(),
+                requirements: vec![ "rq-2".to_string() ]
+            },
+            crate::variety::Variety{
+                name: "var-3".to_string(),
+                harvest_schedule: vec![],
+                planting_schedule: [true;SEASON_LENGTH],
+                instructions: std::collections::HashMap::new(),
+                requirements: vec![ "rq-1".to_string(), "rq-2".to_string() ]
+            }
+        ]
+    };
+
+    let mut subject = Rand::new(&params);
+
+    for _ in 0..100 {
+        for w in 0..SEASON_LENGTH {
+            let v = subject.random_variety(w, 0).expect("fail");
+            assert_ne!(v, 2);
+            assert_ne!(v, 3);
+        }
+    }
+}
+
+#[cfg(test)]
+#[test]
+fn random_variety_satisfies_planting_schedule() {
+    let mut params = Params{
+        beds: vec![ crate::bed::Bed{
+            name: "bed-0".to_string(),
+            properties: vec![ ]
+        } ],
+        varieties: vec![ 
+            crate::variety::Variety{
+                name: "var-0".to_string(),
+                harvest_schedule: vec![],
+                planting_schedule: [true;SEASON_LENGTH],
+                instructions: std::collections::HashMap::new(),
+                requirements: vec![ ]
+            }
+        ]
+    };
+
+    for i in 0..SEASON_LENGTH {
+        params.varieties[0].planting_schedule[i] = i % 2 == 0;
+    }
+
+    let mut subject = Rand::new(&params);
+
+    for _ in 0..100 {
+        for w in 0..SEASON_LENGTH {
+            let v = subject.random_variety(w, 0);
+            
+            match v {
+                Some(_) => assert_eq!(w%2, 0),
+                None => assert_ne!(w%2, 0)
+            };
+        }
+    }
+}
+
+#[cfg(test)]
+#[test]
+fn rand_select_individual() {
+    let params = Params{
+        beds: vec![ crate::bed::Bed{
+            name: "bed-1".to_string(),
+            properties: vec![]
+        } ],
+        varieties: vec![ crate::variety::Variety{
+            name: "var-1".to_string(),
+            harvest_schedule: vec![],
+            planting_schedule: [false;SEASON_LENGTH],
+            instructions: std::collections::HashMap::new(),
+            requirements: vec![]
+        }]
+    };
+    let mut subject = Rand::new(&params);
+
+    let mut count_low = 0;
+    let mut count_hi = 0;
+    for _ in 0..1000 {
+        let i = subject.select_individual();
+        assert!(i < POPULATION_SIZE);
+        if i < 10 {
+            count_low += 1
+        }
+        if i > POPULATION_SIZE-10 {
+            count_hi += 1
+        }
+    }
+    assert!(count_low < count_hi)
 }

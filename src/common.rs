@@ -16,10 +16,10 @@ pub fn as_array(thing: &JsonValue) -> Result<&Vec<JsonValue>, &'static str> {
     }
 }
 
-pub fn as_string(thing: &JsonValue) -> Result<&str, &'static str> {
+pub fn as_string(thing: &JsonValue) -> Result<String, &'static str> {
     match thing {
-        JsonValue::String(s) => Ok(s),
-        JsonValue::Short(s) => Ok(s),
+        JsonValue::String(s) => Ok(String::from(s)),
+        JsonValue::Short(s) => Ok(String::from(s as &str)),
         _ => Err("Expected JSON string")
     }
 }
