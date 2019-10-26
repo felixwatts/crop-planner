@@ -24,7 +24,7 @@ Once you are happy with the parameters, generate a new crop plan:
 $> harvest solve
 ```
 
-That program will run for a few minutes while it explores the vast number of different assignments of crops to beds over the year. Once it finds a good solution it will stop. You can now explore the crop plan that was generated.
+The program will run for a few minutes while it explores the vast number of different possible assignments of crops to beds over the year. It uses [artificial evolution](https://en.wikipedia.org/wiki/Evolutionary_algorithm) to design a plan that maximizes potential profit. Once it finds a good solution it will stop. You can now explore the crop plan that has been generated.
 
 ```
 $> harvest print
