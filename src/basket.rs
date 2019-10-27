@@ -34,13 +34,12 @@ impl<'a> Basket {
     pub fn shortfall(&self, actual_basket: &Basket, category: usize) -> i32 {
         let expected = self.items[category];
         let actual = actual_basket.items[category];
-        // let shortfall = expected - actual;
-        return (expected - actual).abs()
-        // if shortfall > 0 {
-        //     shortfall
-        // } else {
-        //     0
-        // }
+        let shortfall = expected - actual;
+        if shortfall > 0 {
+            shortfall
+        } else {
+            0
+        }
     }
 
     pub fn try_parse(value: &JsonValue, params: &mut Params) -> Result<Self, Box<dyn Error>> {

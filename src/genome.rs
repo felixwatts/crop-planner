@@ -29,12 +29,6 @@ impl Genome<'_> {
         Phenome::new(&self.genes, &self.params)
     }
 
-    pub fn randomize(&mut self, rand: &mut crate::rand::Rand) {
-        for gene in 0..self.genes.len() {
-            self.randomize_gene(gene, rand);
-        }
-    }
-
     pub fn cross(mother: &Self, father: &Self, child: &mut Self, rand: &mut crate::rand::Rand) {
         for gene in 0..mother.genes.len() {
             let variety = match rand.random_parent() {
@@ -47,17 +41,20 @@ impl Genome<'_> {
 
     pub fn mutate(&mut self, rand: &mut crate::rand::Rand) {
         let gene = rand.random_gene();
-        self.randomize_gene(gene, rand);
+
+        let week = gene % SEASON_LENGTH;
+        let bed = gene / SEASON_LENGTH;
+        let variety = rand.random_variety(week, bed).or(Some(0)).unwrap();
+
+        for w in week..week+self.params.varieties[variety].get_longevity() {
+            self.genes[(bed*SEASON_LENGTH)+(w%SEASON_LENGTH)] = 0;
+        }
+
+        self.genes[gene] = variety
     }
 
     pub fn get_genes(&self) -> Vec<usize> {
         self.genes.clone()
-    }
-
-    fn randomize_gene(&mut self, gene: usize, rand: &mut crate::rand::Rand) {
-        let week = gene % SEASON_LENGTH;
-        let bed = gene / SEASON_LENGTH;
-        self.genes[gene] = rand.random_variety(week, bed).or(Some(0)).unwrap();
     }
 }
 

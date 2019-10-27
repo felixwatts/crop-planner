@@ -17,20 +17,11 @@ impl<'a> Evolver<'a> {
         let rand = Rand::new(&params);
         let pop = vec!(Genome::new(&params); POPULATION_SIZE);
 
-        let mut evolver = Evolver {
+        Evolver {
             rand: rand,
             params: params,
             pop: pop,
-        };
-
-        for i in 0..POPULATION_SIZE {
-            evolver.pop[i].randomize(&mut evolver.rand);
         }
-
-        // initial sort by fitness
-        evolver.step();
-
-        evolver
     }
 
     pub fn step(&mut self) {
