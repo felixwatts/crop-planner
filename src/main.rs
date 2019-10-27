@@ -1,5 +1,4 @@
 mod constant;
-mod harvest_plan;
 mod rand;
 mod genome;
 mod evolver;
@@ -12,9 +11,11 @@ mod repo;
 mod bed_plan;
 mod tasks;
 mod phenome;
+mod basket;
 
 #[macro_use] extern crate lazy_static;
 
+use crate::basket::BasketDisplay;
 use structopt::StructOpt;
 use crate::cli::*;
 use crate::repo::Repo;
@@ -87,6 +88,19 @@ fn print_week(week: usize) -> Result<(), Box<dyn std::error::Error>> {
     let params = repo.get_params()?;
     let genome = crate::genome::Genome::from_genes(genes, &params);
     let phenome = genome.to_phenome();
+
+    let actual_baskets = phenome.get_baskets();
+    let actual_basket = &actual_baskets[week];
+    let expected_basket = &params.baskets[week];
+
+    println!("Week #{}", week);
+    println!("");
+    println!("Target Basket:");
+    println!("{}", BasketDisplay{ basket: expected_basket, params: &params });
+    println!("");
+    println!("Actual Basket:");
+    println!("{}", BasketDisplay{ basket: actual_basket, params: &params });
+
     let tasks = phenome.get_tasks();    
     let week_instructions = tasks.get(week);
 
@@ -105,8 +119,7 @@ fn print_solution() -> Result<(), Box<dyn std::error::Error>> {
     let params = repo.get_params()?;
     let genome = crate::genome::Genome::from_genes(genes, &params);
     let phenome = genome.to_phenome();
-    let harvest_plan = phenome.get_harvest_plan();
-    println!("{}", &harvest_plan);
+    println!("{}", &phenome);
     Ok(())
 }
 

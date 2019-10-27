@@ -13,7 +13,7 @@ pub struct Evolver<'a> {
 
 impl<'a> Evolver<'a> {
 
-    pub fn new<'b>(params: &'b Params) -> Evolver<'b> {
+    pub fn new(params: &'a Params) -> Evolver<'a> {
         let rand = Rand::new(&params);
         let pop = vec!(Genome::new(&params); POPULATION_SIZE);
 

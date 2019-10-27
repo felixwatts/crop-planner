@@ -1,3 +1,4 @@
+use crate::basket::Basket;
 use crate::tasks::Tasks;
 use crate::variety::Variety;
 use crate::constant::WeekId;
@@ -66,7 +67,8 @@ impl BedPlan<'_> {
             let harvest_instruction = harvest_instruction_template
                 .replace("<variety>", &harvested_variety.name)
                 .replace("<label>", &format!("{}-{}", self.def.name, bed_week.week))
-                .replace("<units>", &bed_week.harvestable_units.to_string());
+                .replace("<units>", &bed_week.harvestable_units.to_string())
+                .replace("<bed>", &self.def.name);
             tasks.add(bed_week.week, &harvest_instruction)
         };
     }
@@ -119,6 +121,11 @@ impl<'a> BedWeek<'a> {
     }
     fn get_planted_variety(&self) -> Option<&'a Variety> {
         if self.crop_age == 0 { Some(&self.params.varieties[self.crop]) } else { None }
+    }
+    pub fn write_basket(&self, basket: &mut Basket) {
+        if self.harvestable_units != 0 {
+            basket.add(self.get_growing_variety().unwrap().basket_category, self.harvestable_units);
+        }
     }
 }
 

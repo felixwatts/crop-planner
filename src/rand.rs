@@ -23,7 +23,7 @@ impl Rand {
         let mut plantable_varieties_by_week_by_bed = Vec::<Vec<Vec<VarietyId>>>::new();
         let mut dist_plantable_variety_by_week_by_bed = Vec::<Vec<Option<Uniform<VarietyId>>>>::new();
 
-        for bed in 0..params.beds.len() {
+        for bed in 0..params.num_beds() {
             let mut plantable_varieties_by_week = std::iter::repeat(vec![ ])
                 .take(SEASON_LENGTH)
                 .collect::<Vec<_>>();
@@ -101,30 +101,36 @@ fn random_variety_meets_requirements() {
                 harvest_schedule: vec![],
                 planting_schedule: [true;SEASON_LENGTH],
                 instructions: std::collections::HashMap::new(),
-                requirements: vec![ ]
+                requirements: vec![ ],
+                basket_category: 0
             },
             crate::variety::Variety{
                 name: "var-1".to_string(),
                 harvest_schedule: vec![],
                 planting_schedule: [true;SEASON_LENGTH],
                 instructions: std::collections::HashMap::new(),
-                requirements: vec![ "rq-1".to_string() ]
+                requirements: vec![ "rq-1".to_string() ],
+                basket_category: 0
             },
             crate::variety::Variety{
                 name: "var-2".to_string(),
                 harvest_schedule: vec![],
                 planting_schedule: [true;SEASON_LENGTH],
                 instructions: std::collections::HashMap::new(),
-                requirements: vec![ "rq-2".to_string() ]
+                requirements: vec![ "rq-2".to_string() ],
+                basket_category: 0
             },
             crate::variety::Variety{
                 name: "var-3".to_string(),
                 harvest_schedule: vec![],
                 planting_schedule: [true;SEASON_LENGTH],
                 instructions: std::collections::HashMap::new(),
-                requirements: vec![ "rq-1".to_string(), "rq-2".to_string() ]
+                requirements: vec![ "rq-1".to_string(), "rq-2".to_string() ],
+                basket_category: 0
             }
-        ]
+        ],
+        baskets: vec![],
+        basket_category_names: vec![]
     };
 
     let mut subject = Rand::new(&params);
@@ -152,9 +158,12 @@ fn random_variety_satisfies_planting_schedule() {
                 harvest_schedule: vec![],
                 planting_schedule: [true;SEASON_LENGTH],
                 instructions: std::collections::HashMap::new(),
-                requirements: vec![ ]
+                requirements: vec![ ],
+                basket_category: 0
             }
-        ]
+        ],
+        baskets: vec![],
+        basket_category_names: vec![]
     };
 
     for i in 0..SEASON_LENGTH {
@@ -188,8 +197,11 @@ fn select_individual() {
             harvest_schedule: vec![],
             planting_schedule: [false;SEASON_LENGTH],
             instructions: std::collections::HashMap::new(),
-            requirements: vec![]
-        }]
+            requirements: vec![],
+            basket_category: 0
+        }],
+        baskets: vec![],
+        basket_category_names: vec![]
     };
     let mut subject = Rand::new(&params);
 

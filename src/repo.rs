@@ -89,11 +89,11 @@ impl Repo {
             Some(sol) => {
                 match self.is_params_unchanged() {
                     Ok(true) => Ok(&sol),
-                    Ok(false) => bail!("The parameters have changed and the solution must be regenerated. Try 'harvest solve'"),
+                    Ok(false) => bail!("The parameters have changed and the solution must be regenerated. Try 'harvest plan'"),
                     Err(e) => Err(e)
                 }
             },
-            None => bail!("The is no solution. Try 'harvest solve'")
+            None => bail!("The is no solution. Try 'harvest plan'")
         }
     }
 
