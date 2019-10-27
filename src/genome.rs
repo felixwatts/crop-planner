@@ -2,7 +2,8 @@ use crate::phenome::Phenome;
 use crate::params::Params;
 use crate::constant::{ SEASON_LENGTH, VarietyId };
 
-
+// Represents a crop plan encoded as a collection of genes
+// Provides methods that are the building blocks of the evolutionary algorithm
 #[derive(Clone)]
 pub struct Genome<'a> {
     genes: Vec<VarietyId>,

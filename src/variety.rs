@@ -8,6 +8,8 @@ use std::error::Error;
 use simple_error::*;
 use regex::Regex;
 
+// Represents a variety of crop
+// Loaded from params.json and used as part of the input parameters to the plan generating algorithm
 #[derive(Clone)]
 pub struct Variety {
     pub name: String,
@@ -127,6 +129,7 @@ fn variety_from_json() {
 }
 
 impl Variety {
+    // Get how long the crop lasts from planting out to last harvest
     pub fn get_longevity(&self) -> WeekRange {
         return self.harvest_schedule.len();
     }

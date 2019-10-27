@@ -2,7 +2,7 @@ mod constant;
 mod harvest_plan;
 mod rand;
 mod genome;
-mod solver;
+mod evolver;
 mod variety;
 mod bed;
 mod params;
@@ -10,7 +10,7 @@ mod common;
 mod cli;
 mod repo;
 mod bed_plan;
-mod instructions;
+mod tasks;
 mod phenome;
 
 #[macro_use] extern crate lazy_static;
@@ -30,7 +30,6 @@ fn main() {
         Cmd::Solve => solve(),
         Cmd::Reset => reset(),
         Cmd::Print(params) => print(&params),
-        Cmd::Instruct(params) => instruct(&params)
     };
 
     match result {
@@ -83,8 +82,21 @@ fn print_bed_week(bed: &std::string::String, week: usize) -> Result<(), Box<dyn 
 }
 
 fn print_week(week: usize) -> Result<(), Box<dyn std::error::Error>> {
-    println!("Week {}", week);
-    Ok(()) // TODO
+    let repo = require_repo()?;
+    let genes = repo.require_solution()?;
+    let params = repo.get_params()?;
+    let genome = crate::genome::Genome::from_genes(genes, &params);
+    let phenome = genome.to_phenome();
+    let tasks = phenome.get_tasks();    
+    let week_instructions = tasks.get(week);
+
+    println!("Tasks for week #{}", week);
+
+    for t in week_instructions.iter() {
+        println!("- {}", t);
+    }
+
+    Ok(())
 }
 
 fn print_solution() -> Result<(), Box<dyn std::error::Error>> {
@@ -92,26 +104,9 @@ fn print_solution() -> Result<(), Box<dyn std::error::Error>> {
     let genes = repo.require_solution()?;
     let params = repo.get_params()?;
     let genome = crate::genome::Genome::from_genes(genes, &params);
-    let harvest_plan = genome.to_phenome().get_harvest_plan();
-    crate::harvest_plan::print_harvest_plan(&harvest_plan, &params);
-    Ok(())
-}
-
-fn instruct(params_instruct: &ParamsInstruct) -> Result<(), Box<dyn std::error::Error>> {
-    let repo = require_repo()?;
-    let genes = repo.require_solution()?;
-    let params = repo.get_params()?;
-    let genome = crate::genome::Genome::from_genes(genes, &params);
     let phenome = genome.to_phenome();
-    let instructions = phenome.get_instructions();    
-    let week_instructions = instructions.get(params_instruct.week);
-
-    println!("Tasks for week #{}", params_instruct.week);
-
-    for t in week_instructions.iter() {
-        println!("- {}", t);
-    }
-
+    let harvest_plan = phenome.get_harvest_plan();
+    println!("{}", &harvest_plan);
     Ok(())
 }
 
@@ -135,7 +130,7 @@ fn solve() -> Result<(), Box<dyn std::error::Error>> {
     repo.require_no_solution()?;
 
     let params = repo.get_params()?;
-    let mut solver = solver::Solver::new(&params);
+    let mut evolver = evolver::Evolver::new(&params);
 
     let mut best_score = std::i32::MIN;
     let mut gens_without_improvement = 0;
@@ -146,9 +141,9 @@ fn solve() -> Result<(), Box<dyn std::error::Error>> {
             break;
         }
 
-        solver.step();
+        evolver.step();
 
-        let score = solver.get_best_score();
+        let score = evolver.get_best_solution().to_phenome().score();
 
         if score > best_score {
             best_score = score;
@@ -162,7 +157,7 @@ fn solve() -> Result<(), Box<dyn std::error::Error>> {
         }
     };
 
-    repo.put_solution(solver.get_best_solution())?;
+    repo.put_solution(evolver.get_best_solution())?;
     repo.save()?;
 
     println!("");

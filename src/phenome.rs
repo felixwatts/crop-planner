@@ -2,10 +2,12 @@ use crate::constant::NUM_BOXES;
 use crate::constant::SEASON_LENGTH;
 use crate::harvest_plan::HarvestPlan;
 use crate::bed_plan::BedPlan;
-use crate::instructions::Instructions;
+use crate::tasks::Tasks;
 use crate::params::Params;
 use std::convert::TryInto;
 
+// Represents the real world expression (crop plan) of the genome
+// Provides methods to evaluate and explore the plan
 pub struct Phenome<'a> {
     genes: &'a Vec<usize>,
     params: &'a Params
@@ -19,8 +21,8 @@ impl<'a> Phenome<'_> {
         }
     }
 
-    pub fn get_instructions(&self) -> Instructions {
-        let mut result = Instructions::new();
+    pub fn get_tasks(&self) -> Tasks {
+        let mut result = Tasks::new();
         for bed in 0..self.params.beds.len() {
             let plan = self.get_bed_plan(bed);
             plan.write_instructions(&mut result);
@@ -28,20 +30,18 @@ impl<'a> Phenome<'_> {
         result
     }
 
+    // This is the fitness function for the evolutionary algorithm
     pub fn score(&self) -> i32 {
-        // minimize plantings
+        // factor to minimize plantings
         let num_plantings: i32 = self.genes.iter().filter(|&x| *x != 0).count().try_into().unwrap();
         let mut score = -num_plantings;
 
         let harvest_plan = self.get_harvest_plan();
 
-        // aim in each week to have the harvestable units of each crop equal to the number of boxes
+        // factor to match harvest to target harvest
         for week in 0..SEASON_LENGTH {
-            let harvest = &harvest_plan[week];
-
             for variety_id in 0..self.params.varieties.len() {
-                let harvestable_units = harvest[variety_id];
-
+                let harvestable_units = harvest_plan.get(week, variety_id);
                 score -= (harvestable_units - NUM_BOXES).abs();
             }
         }
@@ -54,19 +54,12 @@ impl<'a> Phenome<'_> {
     }
 
     pub fn get_harvest_plan(&self) -> HarvestPlan {
-        // build the harvest plan, which tells us how many units of each variety
-        // are harvestable in each week
+        let mut harvest_plan = HarvestPlan::new(self.params);
 
-        let mut harvest_plan = std::iter::repeat(vec![ 0; self.params.varieties.len() ])
-            .take(SEASON_LENGTH)
-            .collect::<Vec<_>>();
-
-        for b in 0..self.params.num_beds() {
-            let bed = self.get_bed_plan(b);
-            for w in bed.iter() {
-                if w.harvest_units != 0 {
-                    harvest_plan[w.week][w.variety] += w.harvest_units;
-                }
+        for bed in 0..self.params.num_beds() {
+            let bed_plan = self.get_bed_plan(bed);
+            for bed_week in bed_plan.iter() {
+                harvest_plan.add(bed_week.week, bed_week.crop, bed_week.harvestable_units);
             }
         } 
 

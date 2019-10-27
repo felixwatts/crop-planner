@@ -1,12 +1,13 @@
 use crate::constant::SEASON_LENGTH;
 
-pub struct Instructions{
+// Represents the tasks for each week as specified by a crop plan
+pub struct Tasks{
     content: Vec<Vec<String>>
 }
 
-impl Instructions {
+impl Tasks {
     pub fn new() -> Self {
-        Instructions{
+        Tasks{
             content: std::iter::repeat(vec![]).take(SEASON_LENGTH).collect()
         }
     }

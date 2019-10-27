@@ -6,6 +6,7 @@ use rand::distributions::Bernoulli;
 use crate::params::Params;
 use crate::constant::{POPULATION_SIZE, SEASON_LENGTH, GeneId, VarietyId, SolutionId};
 
+// Provides randomization methods for the evolutionary algorithm
 pub struct Rand {
     rng: ThreadRng,
     dist_gene: Uniform<GeneId>,
@@ -57,18 +58,24 @@ impl Rand {
         }
     }
 
+    // Choose one of two parents with equal probability
     pub fn random_parent(&mut self) -> bool {
         return self.dist_parent.sample(&mut self.rng);
     }
 
+    // Choose a gene from the genome at random with uniform probability
     pub fn random_gene(&mut self) -> GeneId {
         return self.dist_gene.sample(&mut self.rng);
     }
 
+    // Choose an individual from the fitness sorted population, with
+    // likelihood of selection proportional to fitness
     pub fn select_individual(&mut self) -> SolutionId {
         return self.dist_selection.sample(&mut self.rng);
     }
 
+    // Choose a variety from the set of varieties that can be planted in
+    // the given bed at the given week, with uniform probability
     pub fn random_variety(&mut self, week: usize, bed: usize) -> Option<VarietyId> {
         match self.dist_plantable_variety_by_week_by_bed[bed][week] {
             Some(dist) => {

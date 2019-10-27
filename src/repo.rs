@@ -7,6 +7,7 @@ use json::object;
 use crate::params::Params;
 use std::convert::{TryFrom};
 
+// Represents the state of the application, which is stored on disk
 #[derive(Debug)]
 pub struct Repo {
     path: std::path::PathBuf,
@@ -26,6 +27,7 @@ impl Repo {
         repo
     }
 
+    // Create a new repo in the current directory
     pub fn init(&mut self) -> Result<(), Box<dyn Error>> {
         if self.is_initialized() {
             bail!("Already initialized");
@@ -39,10 +41,12 @@ impl Repo {
         Ok(())
     }
 
+    // Drop the current solution
     pub fn reset(&mut self) {
         self.solution = None;
     }
 
+    // Load application state from the repo in the current directory
     pub fn load(&mut self) -> Result<(), Box<dyn Error>> {
         self.require_initialized()?;
 
@@ -59,6 +63,7 @@ impl Repo {
         Ok(())
     }
 
+    // Save application state to the repo in the current directory
     pub fn save(&self) -> Result<(), Box<dyn Error>> {
         self.require_initialized()?;
 
@@ -70,11 +75,6 @@ impl Repo {
         fs::write(self.get_repo_path(), json.dump().as_bytes())?;
 
         Ok(())
-    }
-
-    fn is_params_unchanged(&self) -> Result<bool, Box<dyn Error>> {
-        let new_hash = self.get_params_hash()?;
-        Ok(new_hash == self.params_hash)
     }
 
     pub fn put_solution(&mut self, sol: &Genome)-> Result<(), Box<dyn Error>> {
@@ -116,6 +116,11 @@ impl Repo {
         let params_json = json::parse(&params_str)?;
         let params = Params::try_from(&params_json)?;
         Ok(params)
+    }
+
+    fn is_params_unchanged(&self) -> Result<bool, Box<dyn Error>> {
+        let new_hash = self.get_params_hash()?;
+        Ok(new_hash == self.params_hash)
     }
 
     fn get_params_path(&self) -> std::path::PathBuf {

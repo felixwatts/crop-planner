@@ -3,32 +3,34 @@ use crate::params::Params;
 use crate::genome::Genome;
 use crate::constant::{POPULATION_SIZE};
 
-pub struct Solver<'a> {
+// Implements the evolutionary algorithm to find a Genome that represents
+// a Phenome with a high score
+pub struct Evolver<'a> {
     rand: Rand,
     params: &'a Params,
     pop: Vec<Genome<'a>>,
 }
 
-impl<'a> Solver<'a> {
+impl<'a> Evolver<'a> {
 
-    pub fn new<'b>(params: &'b Params) -> Solver<'b> {
+    pub fn new<'b>(params: &'b Params) -> Evolver<'b> {
         let rand = Rand::new(&params);
         let pop = vec!(Genome::new(&params); POPULATION_SIZE);
 
-        let mut solver = Solver {
+        let mut evolver = Evolver {
             rand: rand,
             params: params,
             pop: pop,
         };
 
         for i in 0..POPULATION_SIZE {
-            solver.pop[i].randomize(&mut solver.rand);
+            evolver.pop[i].randomize(&mut evolver.rand);
         }
 
         // initial sort by fitness
-        solver.step();
+        evolver.step();
 
-        solver
+        evolver
     }
 
     fn spawn(&mut self, child: &mut Genome<'a>) {
@@ -54,9 +56,9 @@ impl<'a> Solver<'a> {
         self.pop = next;
     }
 
-    pub fn get_best_score(&self) -> i32 {
-        self.pop[POPULATION_SIZE-1].to_phenome().score()
-    }
+    // pub fn get_best_score(&self) -> i32 {
+    //     self.pop[POPULATION_SIZE-1].to_phenome().score()
+    // }
 
     pub fn get_best_solution(&self) -> &Genome<'a> {
         self.pop.last().unwrap()

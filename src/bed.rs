@@ -2,6 +2,7 @@ use std::convert::TryFrom;
 use json::JsonValue;
 use crate::common::*;
 
+// Definition of a single bed, as loaded from params.json
 #[derive(Clone, Debug)]
 pub struct Bed {
     pub name: String,

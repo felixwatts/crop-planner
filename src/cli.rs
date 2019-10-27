@@ -10,27 +10,24 @@ pub struct ParamsPrint {
 }
 
 #[derive(Debug, StructOpt)]
-pub struct ParamsInstruct {
+pub struct ParamsTasks {
     #[structopt(short, long)]
     pub week: usize
 }
 
 #[derive(Debug, StructOpt)]
 pub enum Cmd {
-    #[structopt(name = "init")]
+    #[structopt(name = "init", about = "Initialize a new harvest repository in the current directory")]
     Init,
 
-    #[structopt(name = "solve")]
+    #[structopt(name = "solve", about = "Design a crop plan based on the current parameter settings")]
     Solve,
 
-    #[structopt(name = "reset")]
+    #[structopt(name = "reset", about = "Drop the current crop plan")]
     Reset,
 
-    #[structopt(name = "print")]
+    #[structopt(name = "print", about = "Print the current crop plan to the console")]
     Print(ParamsPrint),
-
-    #[structopt(name = "tasks")]
-    Instruct(ParamsInstruct)
 }
 
 #[derive(StructOpt, Debug)]

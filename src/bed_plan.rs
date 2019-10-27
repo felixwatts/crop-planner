@@ -1,9 +1,12 @@
+use crate::tasks::Tasks;
+use crate::variety::Variety;
 use crate::constant::WeekId;
-use crate::instructions::Instructions;
 use crate::constant::{VarietyId, SEASON_LENGTH};
 use crate::params::Params;
 use crate::bed::Bed;
 
+// Represents part of a crop plan relating to a single bed
+// Provides methods to extract instructions and statistics and print
 pub struct BedPlan<'a> {
     planting_schedule: &'a [VarietyId],
     params: &'a Params,
@@ -24,53 +27,57 @@ impl BedPlan<'_> {
         BedPlanIterator::new(self.planting_schedule, self.params)
     }
 
-    pub fn write_instructions(&self, ins: &mut Instructions) {
-        for item in self.iter() {
-            let instructions = &self.params.varieties[item.variety].instructions;
+    pub fn write_instructions(&self, tasks: &mut Tasks) {
+        for bed_week in self.iter() {
+            self.write_planting_instructions(&bed_week, tasks);
+            self.write_harvesting_instructions(&bed_week, tasks);
+        }
+    }
 
-            if item.age == 0 {
-                // planted this week
-                for w in -52..52 {
-                    let instruction = instructions.get(&w.to_string());
-                    match instruction {
-                        Some(i) => {
-                            let mut i2 = i.replace("<variety>", &self.params.varieties[item.variety].name);
-                            i2 = i2.replace("<label>", &format!("{}-{}", self.def.name, item.week));
-                            i2 = i2.replace("<bed>", &self.def.name);
-                            let mut week = w + (item.week as i32);
-                            while week < 0 {
-                                week += SEASON_LENGTH as i32
-                            }
-                            ins.add(week as usize, &i2)
-                        },
-                        None => ()
+    fn write_planting_instructions(&self, bed_week: &BedWeek, tasks: &mut Tasks) {
+        match bed_week.get_planted_variety() {
+            Some(planted_variety) => {
+                for week_offset in -52..52 {
+                    let instruction_template_opt = &planted_variety.instructions.get(&week_offset.to_string());
+                    if let Some(instruction_template) = instruction_template_opt {
+                        let instruction = instruction_template
+                            .replace("<variety>", &planted_variety.name)
+                            .replace("<label>", &format!("{}-{}", self.def.name, bed_week.week))
+                            .replace("<bed>", &self.def.name);
+                        let mut week = week_offset + (bed_week.week as i32);
+                        while week < 0 {
+                            week += SEASON_LENGTH as i32
+                        }
+                        tasks.add(week as usize, &instruction);
                     };
                 }
-            };
-
-            if item.harvest_units != 0 {
-                // harvested this week
-                let instruction = instructions.get("harvest");
-                match instruction {
-                    Some(i) => {
-                        let mut i2 = i.replace("<variety>", &self.params.varieties[item.variety].name);
-                        i2 = i2.replace("<label>", &format!("{}-{}", self.def.name, item.week));
-                        i2 = i2.replace("<bed>", &self.def.name);
-                        i2 = i2.replace("<units>", &item.harvest_units.to_string());
-                        ins.add(item.week, &i2)
-                    },
-                    None => ()
-                };
-            };
+            },
+            None => ()
         }
+    }
+
+    fn write_harvesting_instructions(&self, bed_week: &BedWeek, tasks: &mut Tasks) {
+
+        if bed_week.harvestable_units == 0 { return }
+
+        let harvested_variety = bed_week.get_growing_variety().unwrap();
+
+        if let Some(harvest_instruction_template) = harvested_variety.instructions.get("harvest") {
+            let harvest_instruction = harvest_instruction_template
+                .replace("<variety>", &harvested_variety.name)
+                .replace("<label>", &format!("{}-{}", self.def.name, bed_week.week))
+                .replace("<units>", &bed_week.harvestable_units.to_string());
+            tasks.add(bed_week.week, &harvest_instruction)
+        };
     }
 
     pub fn utilization(&self) -> f32 {
 
         let mut occupied_weeks = 0.0;
-        for item in self.iter() {
-            if item.variety != 0 {
-                occupied_weeks += 1.0;
+        for bed_week in self.iter() {
+            match bed_week.get_growing_variety() {
+                Some(_) => occupied_weeks += 1.0,
+                None => ()
             }
         }
         occupied_weeks / SEASON_LENGTH as f32
@@ -98,12 +105,21 @@ impl std::fmt::Display for BedPlan<'_> {
     }
 }
 
-#[derive(Debug)]
-pub struct BedWeek {
+pub struct BedWeek<'a> {
     pub week: WeekId,
-    pub variety: VarietyId,
-    pub age: usize,
-    pub harvest_units: i32
+    pub crop: VarietyId,
+    pub crop_age: usize,
+    pub harvestable_units: i32,
+    params: &'a Params
+}
+
+impl<'a> BedWeek<'a> {
+    fn get_growing_variety(&self) -> Option<&'a Variety> {
+        if self.crop != 0 { Some(&self.params.varieties[self.crop]) } else { None }
+    }
+    fn get_planted_variety(&self) -> Option<&'a Variety> {
+        if self.crop_age == 0 { Some(&self.params.varieties[self.crop]) } else { None }
+    }
 }
 
 pub struct BedPlanIterator<'a> {
@@ -129,8 +145,8 @@ impl<'a> BedPlanIterator<'a> {
     }
 }
 
-impl Iterator for BedPlanIterator<'_> {
-    type Item = BedWeek;
+impl<'a> Iterator for BedPlanIterator<'a> {
+    type Item = BedWeek<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
         match self.first_planting {
@@ -148,16 +164,21 @@ impl Iterator for BedPlanIterator<'_> {
 
                 let mut result = BedWeek{
                     week: self.week,
-                    variety: self.planted_variety,
-                    age: self.planted_age,
-                    harvest_units: 0
+                    crop: self.planted_variety,
+                    crop_age: self.planted_age,
+                    harvestable_units: 0,
+                    params: self.params
                 };
 
                 if self.planted_variety != 0 {
-                    result.harvest_units = self
+                    result.harvestable_units = self
                         .params
                         .varieties[self.planted_variety]
-                        .harvest_schedule[self.planted_age]
+                        .harvest_schedule[self.planted_age];
+                }
+
+                if self.planted_variety != 0 {
+
                 }
 
                 self.week = (self.week + 1) % SEASON_LENGTH;

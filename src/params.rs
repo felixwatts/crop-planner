@@ -6,6 +6,8 @@ use crate::common::*;
 use std::convert::TryFrom;
 use json::JsonValue;
 
+// Represents all of the input parameters to the plan building algorithm
+// Loaded from params.json
 #[derive(Clone)]
 pub struct Params {
     pub beds: Vec<Bed>,
