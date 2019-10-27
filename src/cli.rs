@@ -20,7 +20,7 @@ pub enum Cmd {
     #[structopt(name = "init", about = "Initialize a new harvest repository in the current directory")]
     Init,
 
-    #[structopt(name = "solve", about = "Design a crop plan based on the current parameter settings")]
+    #[structopt(name = "plan", about = "Design a crop plan based on the current parameter settings")]
     Solve,
 
     #[structopt(name = "reset", about = "Drop the current crop plan")]
