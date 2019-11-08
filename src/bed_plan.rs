@@ -9,6 +9,7 @@ use crate::bed::Bed;
 // Provides methods to extract instructions and statistics and print
 pub struct BedPlan<'a> {
     planting_schedule: &'a [VarietyId],
+    planting_schedule_prior_year: &'a [VarietyId],
     params: &'a Params,
     def: &'a Bed
 }
@@ -16,15 +17,18 @@ pub struct BedPlan<'a> {
 impl BedPlan<'_> {
     pub fn new<'a>(bed: usize, genes: &'a Vec<VarietyId>, params: &'a Params) -> BedPlan<'a> {
         let planting_schedule = &genes[(bed*SEASON_LENGTH)..(bed*SEASON_LENGTH+SEASON_LENGTH)];
+        let planting_schedule_prior_year = &genes[(bed*SEASON_LENGTH)..(bed*SEASON_LENGTH+SEASON_LENGTH)];
+        // &params.planting_schedule_prior_year[(bed*SEASON_LENGTH)..(bed*SEASON_LENGTH+SEASON_LENGTH)];
         BedPlan{
             planting_schedule: planting_schedule,
+            planting_schedule_prior_year: planting_schedule_prior_year,
             params: params,
             def: &params.beds[bed]
         }
     }
 
     pub fn iter<'a>(&'a self) -> BedPlanIterator<'a> {
-        BedPlanIterator::new(self.planting_schedule, self.params)
+        BedPlanIterator::new(&self)
     }
 
     pub fn write_instructions(&self, tasks: &mut Tasks) {
@@ -75,7 +79,7 @@ impl BedPlan<'_> {
     pub fn utilization(&self) -> f32 {
 
         let mut occupied_weeks = 0.0;
-        for bed_week in self.iter() {
+        for bed_week in self.iter().take(SEASON_LENGTH) {
             match bed_week.get_growing_variety() {
                 Some(_) => occupied_weeks += 1.0,
                 None => ()
@@ -115,33 +119,54 @@ pub struct BedWeek<'a> {
 }
 
 impl<'a> BedWeek<'a> {
-    fn get_growing_variety(&self) -> Option<&'a Variety> {
+    pub fn get_growing_variety(&self) -> Option<&'a Variety> {
         if self.crop != 0 { Some(&self.params.varieties[self.crop]) } else { None }
     }
-    fn get_planted_variety(&self) -> Option<&'a Variety> {
+    pub fn get_planted_variety(&self) -> Option<&'a Variety> {
         if self.crop_age == 0 { Some(&self.params.varieties[self.crop]) } else { None }
     }
 }
 
 pub struct BedPlanIterator<'a> {
-    planting_schedule: &'a[usize],
-    first_planting: Option<usize>,
+    bed_plan: &'a BedPlan<'a>,
     week: usize,
     planted_variety: VarietyId,
     planted_age: usize,
-    params: &'a Params
 }
 
 impl<'a> BedPlanIterator<'a> {
-    pub fn new(planting_schedule: &'a[usize], params: &'a Params) -> BedPlanIterator<'a> {
-        let first_planting = planting_schedule.iter().position(|&x| x != 0);
-        BedPlanIterator {
-            planting_schedule: planting_schedule,
-            first_planting: first_planting,
-            week: first_planting.or(Some(0)).unwrap(),
-            planted_variety: 0,
-            planted_age: 0,
-            params: params
+    pub fn new(bed_plan: &'a BedPlan<'a>) -> BedPlanIterator<'a> {
+
+        let planting_from_prior_year = bed_plan.planting_schedule_prior_year.iter().rposition(|&x| x != 0);
+        match planting_from_prior_year {
+            None =>
+                BedPlanIterator {
+                    bed_plan: bed_plan,
+                    week: 0,
+                    planted_variety: 0,
+                    planted_age: 0,
+                },
+            Some(prior_year_last_planting_week) => {
+                let planted_variety = bed_plan.planting_schedule_prior_year[prior_year_last_planting_week];
+                let planted_age = SEASON_LENGTH - prior_year_last_planting_week;
+                let is_alive = planted_age < bed_plan.params.varieties[planted_variety].get_longevity();
+
+                if is_alive {
+                    BedPlanIterator {
+                        bed_plan: bed_plan,
+                        week: 0,
+                        planted_variety: bed_plan.planting_schedule_prior_year[prior_year_last_planting_week],
+                        planted_age: SEASON_LENGTH - prior_year_last_planting_week
+                    }
+                } else {
+                    BedPlanIterator {
+                        bed_plan: bed_plan,
+                        week: 0,
+                        planted_variety: 0,
+                        planted_age: 0,
+                    }
+                }
+            }
         }
     }
 }
@@ -150,15 +175,16 @@ impl<'a> Iterator for BedPlanIterator<'a> {
     type Item = BedWeek<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        match self.first_planting {
-            None => None,
-            Some(fp) => {
-                if self.planting_schedule[self.week] != 0 {
-                    self.planted_variety = self.planting_schedule[self.week];
+        const TWO_SEASONS: usize = SEASON_LENGTH * 2;
+        match self.week {
+            TWO_SEASONS => None,
+            _ => {
+                if self.week < SEASON_LENGTH && self.bed_plan.planting_schedule[self.week] != 0 {
+                    self.planted_variety = self.bed_plan.planting_schedule[self.week];
                     self.planted_age = 0;
                 }
 
-                if self.planted_variety != 0 && self.planted_age >= self.params.varieties[self.planted_variety].get_longevity() {
+                if self.planted_variety != 0 && self.planted_age >= self.bed_plan.params.varieties[self.planted_variety].get_longevity() {
                     self.planted_variety = 0;
                     self.planted_age = 0;
                 }
@@ -168,24 +194,21 @@ impl<'a> Iterator for BedPlanIterator<'a> {
                     crop: self.planted_variety,
                     crop_age: self.planted_age,
                     harvestable_units: 0,
-                    params: self.params
+                    params: self.bed_plan.params
                 };
 
                 if self.planted_variety != 0 {
                     result.harvestable_units = self
+                        .bed_plan
                         .params
                         .varieties[self.planted_variety]
                         .harvest_schedule[self.planted_age];
                 }
 
-                if self.planted_variety != 0 {
-
-                }
-
-                self.week = (self.week + 1) % SEASON_LENGTH;
+                self.week += 1;
                 self.planted_age += 1;
 
-                if self.week == fp { None } else { Some(result) }
+                Some(result)
             }
         }
     }

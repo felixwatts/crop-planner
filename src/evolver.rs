@@ -1,7 +1,9 @@
+use crate::constant::VarietyId;
 use crate::rand::Rand;
 use crate::params::Params;
 use crate::genome::Genome;
 use crate::constant::{POPULATION_SIZE};
+use std::io::Write;
 
 // Implements the evolutionary algorithm to find a Genome that represents
 // a Phenome with a high score
@@ -22,6 +24,28 @@ impl<'a> Evolver<'a> {
             params: params,
             pop: pop,
         }
+    }
+
+    pub fn solve(&mut self) -> Vec<VarietyId> {
+        let mut num_gens_without_improvement = 0;
+        let mut best_fitness = std::i32::MIN;
+        while num_gens_without_improvement < 1000 {
+            self.step();
+            let fitness = self.get_best_solution().to_evaluator().get_profit();
+            if fitness > best_fitness {
+                best_fitness = fitness;
+                num_gens_without_improvement = 0;
+
+                print!(".");
+                std::io::stdout().flush().expect("internal error");
+            } else {
+                num_gens_without_improvement += 1;
+            }
+        }
+
+        println!();
+
+        self.get_best_solution().get_genes()     
     }
 
     pub fn step(&mut self) {
@@ -61,6 +85,6 @@ impl<'a> Evolver<'a> {
     }
 
     fn sort_by_fitness(&mut self, population: &mut Vec<Genome<'a>>) {
-        population.sort_by_cached_key(|p| p.to_evaluator().get_score());
+        population.sort_by_cached_key(|p| p.to_evaluator().get_profit());
     }
 }

@@ -10,7 +10,6 @@ mod cli;
 mod repo;
 mod bed_plan;
 mod tasks;
-mod cf;
 mod evaluator;
 mod formatter;
 
@@ -19,7 +18,7 @@ mod formatter;
 use structopt::StructOpt;
 use crate::cli::*;
 use crate::repo::Repo;
-use std::io::prelude::*; 
+
 use simple_error::*;                                                          
 
 fn main() {
@@ -127,14 +126,14 @@ fn solve() -> Result<(), Box<dyn std::error::Error>> {
     repo.require_no_solution()?;
 
     let params = repo.get_params()?;
+    //let mut planner = crate::cf::CfPlanner::new(&params);
+    let mut evolver = crate::evolver::Evolver::new(&params);
+    //let genes = planner.plan();
 
-    let mut planner = crate::cf::CfPlanner::new(&params);
-    let genes = planner.plan();
+    let solution = evolver.solve();
 
-    repo.put_solution(genes)?;
+    repo.put_solution(solution)?;
     repo.save()?;
-
-    println!("");
 
     Ok(())
 }

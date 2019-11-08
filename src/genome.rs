@@ -18,13 +18,6 @@ impl Genome<'_> {
         }
     }
 
-    pub fn from_genes<'a>(genes: &Vec<usize>, params: &'a Params) -> Genome<'a> {
-        Genome {
-            genes: genes.clone(),
-            params: params
-        }
-    }
-
     pub fn to_evaluator(&self) -> Evaluator {
         Evaluator::new(&self.params, &self.genes)
     }
@@ -46,8 +39,10 @@ impl Genome<'_> {
         let bed = gene / SEASON_LENGTH;
         let variety = rand.random_variety(week, bed).or(Some(0)).unwrap();
 
-        for w in week..week+self.params.varieties[variety].get_longevity() {
-            self.genes[(bed*SEASON_LENGTH)+(w%SEASON_LENGTH)] = 0;
+        let end_week = std::cmp::min(SEASON_LENGTH, week+self.params.varieties[variety].get_longevity());
+
+        for w in week..end_week {
+            self.genes[(bed*SEASON_LENGTH)+w] = 0;
         }
 
         self.genes[gene] = variety

@@ -1,5 +1,4 @@
 use crate::constant::VarietyId;
-use crate::genome::Genome;
 use std::fs;
 use std::error::Error;
 use crate::common::*;

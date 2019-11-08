@@ -357,182 +357,178 @@
             "name": "~bI43"
         }
     ],
-    "baskets": {
-        "0-12": {
-            "roots": 120,
-            "greens": 240
-        },        
-        "13-20": {
-            "roots": 60,
-            "greens": 180
-        },        
-        "21-40": {
-            "greens": 180,
-            "fruits": 60
-        },        
-        "41-51": {
-            "greens": 120,
-            "fruits": 120
-        }
-    },
+    "num_baskets": 120,
     "varieties": [
         {
             "name": "Lettuce-Indoor",
             "basket_category": "greens",
             "planting_schedule": "0-51",
             "requirements": [ "polytunnel" ],
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8 ],
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100],
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
                 "-1": "Harden off <variety> tray <label>",
                 "0": "Transplant <variety> from tray <label> into bed <bed>",
                 "harvest": "Harvest <units> units of <variety> from bed <bed>"
-            }
+            },
+            "value_per_unit": 45
         },
         {
             "name": "Spinach-Summer",
             "basket_category": "greens",
             "planting_schedule": "9-20",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8 ],
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 125, 125, 125, 125 ],
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
                 "-1": "Harden off <variety> tray <label>",
                 "0": "Transplant <variety> from tray <label> into bed <bed>",
                 "harvest": "Harvest <units> units of <variety> from bed <bed>"
-            }
+            },
+            "value_per_unit": 160
         },
         {
             "name": "Spinach-Winter",
             "basket_category": "greens",
             "planting_schedule": "40-48",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8 ],
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 125, 125, 125, 125 ],
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
                 "-1": "Harden off <variety> tray <label>",
                 "0": "Transplant <variety> from tray <label> into bed <bed>",
                 "harvest": "Harvest <units> units of <variety> from bed <bed>"
-            }
+            },
+            "value_per_unit": 160
         },
         {
             "name": "Radish",
             "basket_category": "greens",
             "planting_schedule": "9-45",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 20 ],
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 50 ],
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
                 "-1": "Harden off <variety> tray <label>",
                 "0": "Transplant <variety> from tray <label> into bed <bed>",
                 "harvest": "Harvest <units> units of <variety> from bed <bed>"
-            }
+            },
+            "value_per_unit": 65
         },
         {
             "name": "Lettuce-Outdoor",
             "basket_category": "greens",
             "planting_schedule": "8-30",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5 ],
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100 ],
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
                 "-1": "Harden off <variety> tray <label>",
                 "0": "Transplant <variety> from tray <label> into bed <bed>",
                 "harvest": "Harvest <units> units of <variety> from bed <bed>"
-            }
+            },
+            "value_per_unit": 45
         },
         {
             "name": "Tomato",
             "basket_category": "fruits",
             "requirements": [ "polytunnel" ],
             "planting_schedule": "9-18",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20 ],
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120 ],
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
                 "-1": "Harden off <variety> tray <label>",
                 "0": "Transplant <variety> from tray <label> into bed <bed>",
                 "harvest": "Harvest <units> units of <variety> from bed <bed>"
-            }
+            },
+            "value_per_unit": 125
         },
         {
             "name": "Carrot-Summer",
             "basket_category": "roots",
             "planting_schedule": "7-14",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 30, 30, 30 ],
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 25, 25, 25 ],
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
                 "-1": "Harden off <variety> tray <label>",
                 "0": "Transplant <variety> from tray <label> into bed <bed>",
                 "harvest": "Harvest <units> units of <variety> from bed <bed>"
-            }
+            },
+            "value_per_unit": 50
         },
         {
             "name": "Carrot-Winter",
             "basket_category": "roots",
             "planting_schedule": "35-45",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 30, 30, 30 ],
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 25, 25, 25 ],
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
                 "-1": "Harden off <variety> tray <label>",
                 "0": "Transplant <variety> from tray <label> into bed <bed>",
                 "harvest": "Harvest <units> units of <variety> from bed <bed>"
-            }
+            },
+            "value_per_unit": 50
         },
         {
             "name": "Swede-Summer",
             "basket_category": "roots",
             "planting_schedule": "16-20",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10 ],
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 20, 20, 20, 20, 20, 20, 20 ],
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
                 "-1": "Harden off <variety> tray <label>",
                 "0": "Transplant <variety> from tray <label> into bed <bed>",
                 "harvest": "Harvest <units> units of <variety> from bed <bed>"
-            }
+            },
+            "value_per_unit": 80
         },
         {
             "name": "Swede-Winter",
             "basket_category": "roots",
             "planting_schedule": "30-40",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10 ],
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 20, 20, 20, 20, 20, 20, 20 ],
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
                 "-1": "Harden off <variety> tray <label>",
                 "0": "Transplant <variety> from tray <label> into bed <bed>",
                 "harvest": "Harvest <units> units of <variety> from bed <bed>"
-            }
+            },
+            "value_per_unit": 80
         },
         {
             "name": "BBean",
             "basket_category": "fruits",
             "planting_schedule": "20-28",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10 ],
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30 ],
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
                 "-1": "Harden off <variety> tray <label>",
                 "0": "Transplant <variety> from tray <label> into bed <bed>",
                 "harvest": "Harvest <units> units of <variety> from bed <bed>"
-            }
+            },
+            "value_per_unit": 110
         },
         {
             "name": "Brocoli",
             "basket_category": "greens",
             "planting_schedule": "36-42",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10 ],
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22 ],
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
                 "-1": "Harden off <variety> tray <label>",
                 "0": "Transplant <variety> from tray <label> into bed <bed>",
                 "harvest": "Harvest <units> units of <variety> from bed <bed>"
-            }
+            },
+            "value_per_unit": 120
         },
         {
             "name": "SOnion",
             "basket_category": "greens",
             "planting_schedule": "32-44",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10 ],
+            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 120, 120, 120 ],
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
                 "-1": "Harden off <variety> tray <label>",
                 "0": "Transplant <variety> from tray <label> into bed <bed>",
                 "harvest": "Harvest <units> units of <variety> from bed <bed>"
-            }
+            },
+            "value_per_unit": 55
         }
     ]
 }
