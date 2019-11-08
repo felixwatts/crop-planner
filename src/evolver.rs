@@ -61,6 +61,6 @@ impl<'a> Evolver<'a> {
     }
 
     fn sort_by_fitness(&mut self, population: &mut Vec<Genome<'a>>) {
-        population.sort_by_cached_key(|p| p.to_phenome().score());
+        population.sort_by_cached_key(|p| p.to_evaluator().get_score());
     }
 }

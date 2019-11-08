@@ -1,133 +1,4 @@
-use std::error::Error;
-use crate::bed::Bed;
-use crate::variety::Variety;
-use crate::constant::SEASON_LENGTH;
-use crate::common::*;
-use std::convert::TryFrom;
-use json::JsonValue;
-
-// Represents all of the input parameters to the plan building algorithm
-// Loaded from params.json
-#[derive(Clone)]
-pub struct Params {
-    pub beds: Vec<Bed>,
-    pub varieties: Vec<Variety>,
-    pub num_baskets: i32
-}
-
-impl TryFrom<&JsonValue> for Params {
-    type Error = Box<dyn Error>;
-    
-    fn try_from(value: &JsonValue) -> Result<Self, Self::Error> {
-
-        let mut params = Params{
-            varieties: vec![],
-            beds: vec![],
-            num_baskets: 0
-        };
-
-        
-
-        let value_json_obj = as_object(value)?;
-        params.num_baskets = as_int(&value_json_obj["num_baskets"])?;
-        let varieties_json_array = as_array(&value_json_obj["varieties"])?;
-        params.varieties = varieties_json_array.iter().map(|j| Variety::try_parse(j, &mut params)).collect::<Result<Vec<_>, _>>()?;
-        params.varieties.insert(0, Variety{
-            name: String::from(""),
-            requirements: vec![],
-            harvest_schedule: vec![ 0 ],
-            planting_schedule: [ true; SEASON_LENGTH ],
-            instructions: std::collections::HashMap::new(),
-            value_per_unit: 0
-        });
-        
-        let beds_json_array = as_array(&value_json_obj["beds"])?;
-        params.beds = beds_json_array.iter().map(|j| Bed::try_from(j)).collect::<Result<Vec<_>, _>>()?;
-
-        Ok(params)
-    }
-}
-
-impl Params {
-    pub fn genome_size(&self) -> usize {
-        self.num_beds() * SEASON_LENGTH
-    }
-
-    pub fn num_beds(&self) -> usize {
-        self.beds.len()
-    }
-
-    pub fn get_bed(&self, name: &str) -> Option<usize> {
-        self.beds.iter().position(|b| b.name == name)
-    }
-}
-
-#[cfg(test)]
-#[test]
-fn params_from_json() {
-    let js = json::parse(r#"
 {
-    "beds": [
-        {
-            "name": "~b00"
-        },
-        {
-            "name": "~b01",
-            "properties": [ "polytunnel" ]
-        }
-    ],
-    "varieties": [
-        {
-            "name": "lettuce",
-            "basket_category": "greens",
-            "requirements": [ ],
-            "harvest_schedule": [ 0, 1, 2, 3 ],
-            "planting_schedule": "3,4,10-20",
-            "instructions": {
-                "-2": "Seed <variety> into a 144 tray and label it <label>",
-                "-1": "Move tray <label> to harden off",
-                "0": "Transplant <variety> from tray <label> into bed <bed>"
-            },
-            "value_per_unit": 100
-        },
-        {
-            "name": "tomato",
-            "basket_category": "tomato",
-            "requirements": [ "polytunnel" ],
-            "harvest_schedule": [ 0, 1, 2, 3 ],
-            "planting_schedule": "3,4,10-20",
-            "instructions": {
-                "-6": "Seed <variety> into a 64 tray and label it <label>",
-                "-4": "Transplant <variety> from tray <label> into 20cm pots and label them <label>",
-                "0": "Transplant <variety> from pots labelled <label> into bed <bed>"
-            },
-            "value_per_unit": 100
-        }
-    ],
-    "num_baskets": 42
-}"#).expect("test is wrong");
-
-    let params = Params::try_from(&js).expect("failed to parse");
-
-    assert_eq!(params.num_beds(), 2);
-    assert_eq!(params.beds[1].name, "~b01");
-    assert!(params.beds[1].properties.contains(&String::from("polytunnel")));
-    assert!(!params.beds[1].properties.contains(&String::from("magic")));
-
-    assert_eq!(params.varieties.len(), 3);
-    assert_eq!(params.varieties[0].name, "");
-    assert_eq!(params.varieties[2].name, "tomato");
-    assert!(params.varieties[2].requirements.contains(&String::from("polytunnel")));
-    assert!(!params.varieties[2].requirements.contains(&String::from("magic")));
-    assert_eq!(params.varieties[1].harvest_schedule.len(), 4);
-    assert_eq!(params.varieties[1].harvest_schedule[2], 2);
-    assert_eq!(params.varieties[2].instructions["-6"], "Seed <variety> into a 64 tray and label it <label>");
-    assert_eq!(params.varieties[2].instructions["0"], "Transplant <variety> from pots labelled <label> into bed <bed>");
-
-    assert_eq!(params.num_baskets, 42);
-}
-
-pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
     "beds": [
         {
             "name": "~bA11",
@@ -486,7 +357,24 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
             "name": "~bI43"
         }
     ],
-    "num_baskets": 120,
+    "baskets": {
+        "0-12": {
+            "roots": 120,
+            "greens": 240
+        },        
+        "13-20": {
+            "roots": 60,
+            "greens": 180
+        },        
+        "21-40": {
+            "greens": 180,
+            "fruits": 60
+        },        
+        "41-51": {
+            "greens": 120,
+            "fruits": 120
+        }
+    },
     "varieties": [
         {
             "name": "Lettuce-Indoor",
@@ -499,8 +387,7 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
                 "-1": "Harden off <variety> tray <label>",
                 "0": "Transplant <variety> from tray <label> into bed <bed>",
                 "harvest": "Harvest <units> units of <variety> from bed <bed>"
-            },
-            "value_per_unit": 100
+            }
         },
         {
             "name": "Spinach-Summer",
@@ -512,8 +399,7 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
                 "-1": "Harden off <variety> tray <label>",
                 "0": "Transplant <variety> from tray <label> into bed <bed>",
                 "harvest": "Harvest <units> units of <variety> from bed <bed>"
-            },
-            "value_per_unit": 100
+            }
         },
         {
             "name": "Spinach-Winter",
@@ -525,8 +411,7 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
                 "-1": "Harden off <variety> tray <label>",
                 "0": "Transplant <variety> from tray <label> into bed <bed>",
                 "harvest": "Harvest <units> units of <variety> from bed <bed>"
-            },
-            "value_per_unit": 100
+            }
         },
         {
             "name": "Radish",
@@ -538,8 +423,7 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
                 "-1": "Harden off <variety> tray <label>",
                 "0": "Transplant <variety> from tray <label> into bed <bed>",
                 "harvest": "Harvest <units> units of <variety> from bed <bed>"
-            },
-            "value_per_unit": 100
+            }
         },
         {
             "name": "Lettuce-Outdoor",
@@ -551,8 +435,7 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
                 "-1": "Harden off <variety> tray <label>",
                 "0": "Transplant <variety> from tray <label> into bed <bed>",
                 "harvest": "Harvest <units> units of <variety> from bed <bed>"
-            },
-            "value_per_unit": 100
+            }
         },
         {
             "name": "Tomato",
@@ -565,8 +448,7 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
                 "-1": "Harden off <variety> tray <label>",
                 "0": "Transplant <variety> from tray <label> into bed <bed>",
                 "harvest": "Harvest <units> units of <variety> from bed <bed>"
-            },
-            "value_per_unit": 100
+            }
         },
         {
             "name": "Carrot-Summer",
@@ -578,8 +460,7 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
                 "-1": "Harden off <variety> tray <label>",
                 "0": "Transplant <variety> from tray <label> into bed <bed>",
                 "harvest": "Harvest <units> units of <variety> from bed <bed>"
-            },
-            "value_per_unit": 100
+            }
         },
         {
             "name": "Carrot-Winter",
@@ -591,8 +472,7 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
                 "-1": "Harden off <variety> tray <label>",
                 "0": "Transplant <variety> from tray <label> into bed <bed>",
                 "harvest": "Harvest <units> units of <variety> from bed <bed>"
-            },
-            "value_per_unit": 100
+            }
         },
         {
             "name": "Swede-Summer",
@@ -604,8 +484,7 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
                 "-1": "Harden off <variety> tray <label>",
                 "0": "Transplant <variety> from tray <label> into bed <bed>",
                 "harvest": "Harvest <units> units of <variety> from bed <bed>"
-            },
-            "value_per_unit": 100
+            }
         },
         {
             "name": "Swede-Winter",
@@ -617,8 +496,7 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
                 "-1": "Harden off <variety> tray <label>",
                 "0": "Transplant <variety> from tray <label> into bed <bed>",
                 "harvest": "Harvest <units> units of <variety> from bed <bed>"
-            },
-            "value_per_unit": 100
+            }
         },
         {
             "name": "BBean",
@@ -630,8 +508,7 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
                 "-1": "Harden off <variety> tray <label>",
                 "0": "Transplant <variety> from tray <label> into bed <bed>",
                 "harvest": "Harvest <units> units of <variety> from bed <bed>"
-            },
-            "value_per_unit": 100
+            }
         },
         {
             "name": "Brocoli",
@@ -643,8 +520,7 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
                 "-1": "Harden off <variety> tray <label>",
                 "0": "Transplant <variety> from tray <label> into bed <bed>",
                 "harvest": "Harvest <units> units of <variety> from bed <bed>"
-            },
-            "value_per_unit": 100
+            }
         },
         {
             "name": "SOnion",
@@ -656,8 +532,7 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
                 "-1": "Harden off <variety> tray <label>",
                 "0": "Transplant <variety> from tray <label> into bed <bed>",
                 "harvest": "Harvest <units> units of <variety> from bed <bed>"
-            },
-            "value_per_unit": 100
+            }
         }
     ]
-}"#;
+}

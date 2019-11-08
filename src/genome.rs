@@ -1,4 +1,4 @@
-use crate::phenome::Phenome;
+use crate::evaluator::Evaluator;
 use crate::params::Params;
 use crate::constant::{ SEASON_LENGTH, VarietyId };
 
@@ -25,8 +25,8 @@ impl Genome<'_> {
         }
     }
 
-    pub fn to_phenome(&self) -> Phenome {
-        Phenome::new(&self.genes, &self.params)
+    pub fn to_evaluator(&self) -> Evaluator {
+        Evaluator::new(&self.params, &self.genes)
     }
 
     pub fn cross(mother: &Self, father: &Self, child: &mut Self, rand: &mut crate::rand::Rand) {

@@ -7,4 +7,5 @@ pub type HarvestableUnits = i32;
 
 pub const SEASON_LENGTH: WeekRange = 52;
 pub const POPULATION_SIZE: usize = 50;
+pub const NUM_BASKETS: i32 = 100;
 

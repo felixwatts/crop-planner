@@ -17,7 +17,7 @@ pub struct Variety {
     pub harvest_schedule: Vec<HarvestableUnits>,
     pub requirements: Vec<String>,
     pub instructions: HashMap<String, String>,
-    pub basket_category: usize
+    pub value_per_unit: i32
 }
 
 impl Variety {
@@ -28,9 +28,6 @@ impl Variety {
     pub fn try_parse(value: &JsonValue, params: &mut Params) -> Result<Self, Box<dyn Error>> {
         let value_obj = as_object(&value)?;
         let name = as_string(&value_obj["name"])?;
-
-        let basket_category_name = as_string(&value_obj["basket_category"])?;
-        let basket_category = params.get_basket_category_id(&basket_category_name);
 
         let requirements = match &value_obj["requirements"] {
             JsonValue::Array(arr) => arr.iter().map(|p| as_string(p)).collect::<Result<Vec<_>,_>>(),
@@ -69,13 +66,15 @@ impl Variety {
         let harvest_schedule = harvest_schedule_arr.iter().map(|j| as_int(j)).collect::<Result<Vec<_>, _>>()?;
         let instructions = try_parse_instructions(&value_obj["instructions"])?;
 
+        let value_per_unit = as_int(&value_obj["value_per_unit"])?;
+
         Ok(Variety {
             name: String::from(name),
             requirements: requirements,
             planting_schedule: planting_schedule,
             harvest_schedule: harvest_schedule,
             instructions: instructions,
-            basket_category: basket_category
+            value_per_unit: value_per_unit
         })
     }
 }
@@ -100,21 +99,20 @@ fn variety_from_json() {
     let mut params = Params{
         beds: vec![],
         varieties: vec![],
-        baskets: vec![],
-        basket_category_names: vec![]
+        num_baskets: 100
     };
     let js = json::parse(r#"
 {
     "name": "tomato",
     "requirements": [ "polytunnel" ],
-    "basket_category": "tomato",
     "harvest_schedule": [ 0, 1, 2, 3 ],
     "planting_schedule": "4-8,20-24,40",
     "instructions": {
         "-6": "Seed <variety> into a 64 tray and label it <label>",
         "-4": "Transplant <variety> from tray <label> into 20cm pots and label them <label>",
         "0": "Transplant <variety> from pots labelled <label> into bed <bed>"
-    }
+    },
+    "value_per_unit": 100
 }"#).expect("test is wrong");
     let variety = Variety::try_parse(&js, &mut params).expect("failed to parse");
     assert_eq!(variety.name, "tomato");
@@ -135,7 +133,7 @@ fn variety_from_json() {
     assert_eq!(variety.planting_schedule[41], false);
     assert_eq!(variety.instructions["-6"], "Seed <variety> into a 64 tray and label it <label>");
     assert_eq!(variety.instructions["0"], "Transplant <variety> from pots labelled <label> into bed <bed>");
-    assert_eq!(params.get_basket_category_name(variety.basket_category), "tomato");
+    assert_eq!(variety.value_per_unit, 100);
 }
 
 impl Variety {

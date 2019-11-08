@@ -1,3 +1,4 @@
+use crate::constant::VarietyId;
 use crate::genome::Genome;
 use std::fs;
 use std::error::Error;
@@ -77,8 +78,8 @@ impl Repo {
         Ok(())
     }
 
-    pub fn put_solution(&mut self, sol: &Genome)-> Result<(), Box<dyn Error>> {
-        self.solution = Some(sol.get_genes());
+    pub fn put_solution(&mut self, sol: Vec<VarietyId>)-> Result<(), Box<dyn Error>> {
+        self.solution = Some(sol);
         self.params_hash = self.get_params_hash()?;
         Ok(())
     }
