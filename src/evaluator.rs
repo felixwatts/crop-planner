@@ -57,14 +57,29 @@ impl<'a> Evaluator<'a> {
         actual as f32 / potential as f32
     }
 
+    // returns the profit in value units realized by this planting schedule
+    // over one season. Note that this captures the value harvested between jan1 and dec 31
+    // and doesn't capture the value of crops planted in that time but not harvested
+    // until next season
     pub fn get_profit(&self) -> i32 {
+        self._get_profit(SEASON_LENGTH)
+    }
+
+    // The fitness function used by the evolutionary algorithm. Captures the value of
+    // all crops harvested _or planted_ between jan1 and dec 31. This encourages plans
+    // that set up good overwintered crops for next year.
+    pub fn get_fitness(&self) -> i32 {
+        self._get_profit(SEASON_LENGTH*2)
+    }
+
+    fn _get_profit(&self, season_length: usize) -> i32 {
         // TODO model cost of production better
         let cost: i32 = self.planting_schedule.iter().map(|x| match x { 0 => 0, _ => 1}).sum();
         let mut profit = -cost;
 
         let harvest_plan = self.get_harvest_plan();
         for variety in 0..self.params.varieties.len() {
-            for week in 0..SEASON_LENGTH {
+            for week in 0..season_length {
                 let harvestable_units = harvest_plan[variety][week];
                 let sellable_units = std::cmp::min(self.params.num_baskets, harvestable_units);
                 let val = sellable_units * self.params.varieties[variety].value_per_unit;

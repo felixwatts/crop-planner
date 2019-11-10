@@ -17,8 +17,7 @@ pub struct BedPlan<'a> {
 impl BedPlan<'_> {
     pub fn new<'a>(bed: usize, planting_schedule: &'a Vec<VarietyId>, params: &'a Params) -> BedPlan<'a> {
         let bed_planting_schedule = &planting_schedule[(bed*SEASON_LENGTH)..(bed*SEASON_LENGTH+SEASON_LENGTH)];
-        let bed_planting_schedule_prior_year = &planting_schedule[(bed*SEASON_LENGTH)..(bed*SEASON_LENGTH+SEASON_LENGTH)];
-        // &params.planting_schedule_prior_year[(bed*SEASON_LENGTH)..(bed*SEASON_LENGTH+SEASON_LENGTH)];
+        let bed_planting_schedule_prior_year = &params.planting_schedule_prior_year[(bed*SEASON_LENGTH)..(bed*SEASON_LENGTH+SEASON_LENGTH)];
         BedPlan{
             planting_schedule: bed_planting_schedule,
             planting_schedule_prior_year: bed_planting_schedule_prior_year,

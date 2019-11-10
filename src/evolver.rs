@@ -5,8 +5,8 @@ use crate::genome::Genome;
 use crate::constant::{POPULATION_SIZE};
 use std::io::Write;
 
-// Implements the evolutionary algorithm to find a Genome that represents
-// a Phenome with a high score
+// Implements the evolutionary algorithm to find a planting schedule that
+// that has a high fitness according to the Evaluator
 pub struct Evolver<'a> {
     rand: Rand,
     params: &'a Params,
@@ -31,7 +31,7 @@ impl<'a> Evolver<'a> {
         let mut best_fitness = std::i32::MIN;
         while num_gens_without_improvement < 1000 {
             self.step();
-            let fitness = self.get_best_solution().to_evaluator().get_profit();
+            let fitness = self.get_best_solution().to_evaluator().get_fitness();
             if fitness > best_fitness {
                 best_fitness = fitness;
                 num_gens_without_improvement = 0;
@@ -85,6 +85,6 @@ impl<'a> Evolver<'a> {
     }
 
     fn sort_by_fitness(&mut self, population: &mut Vec<Genome<'a>>) {
-        population.sort_by_cached_key(|p| p.to_evaluator().get_profit());
+        population.sort_by_cached_key(|p| p.to_evaluator().get_fitness());
     }
 }
