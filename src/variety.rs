@@ -60,8 +60,27 @@ impl Variety {
             }
         }
 
-        let harvest_schedule_arr = as_array(&value_obj["harvest_schedule"])?;
-        let harvest_schedule = harvest_schedule_arr.iter().map(|j| as_int(j)).collect::<Result<Vec<_>, _>>()?;
+        let mut harvest_schedule = vec![];
+        let harvest_schedule_str = as_string(&value_obj["harvest_schedule"])?;
+        lazy_static! {
+            static ref REGEX_HARVEST_SCHEDULE: Regex = Regex::new("([0-9]+)(:([0-9]+))?").unwrap();
+        }
+        for cap in REGEX_HARVEST_SCHEDULE.captures_iter(&harvest_schedule_str) {
+            match cap.get(3) {
+                None => {
+                    let harvestable_units = &cap[1].parse::<i32>()?;
+                    harvest_schedule.push(*harvestable_units);
+                },
+                Some(_) => {
+                    let harvestable_units = &cap[1].parse::<i32>()?;
+                    let run_length = &cap[3].parse::<i32>()?;
+                    for _ in 0..*run_length {
+                        harvest_schedule.push(*harvestable_units);
+                    }
+                }
+            }
+        }
+
         let instructions = try_parse_instructions(&value_obj["instructions"])?;
 
         let value_per_unit = as_int(&value_obj["value_per_unit"])?;
@@ -111,7 +130,7 @@ fn variety_from_json() {
 {
     "name": "tomato",
     "requirements": [ "polytunnel" ],
-    "harvest_schedule": [ 0, 1, 2, 3 ],
+    "harvest_schedule": "0:3,4,5:2",
     "planting_schedule": "4-8,20-24,40,50",
     "instructions": {
         "-6": "Seed <variety> into a 64 tray and label it <label>",
@@ -124,8 +143,7 @@ fn variety_from_json() {
     assert_eq!(variety.name, "tomato");
     assert!(variety.requirements.contains(&String::from("polytunnel")));
     assert!(!variety.requirements.contains(&String::from("magic")));
-    assert_eq!(variety.harvest_schedule.len(), 4);
-    assert_eq!(variety.harvest_schedule[2], 2);
+    assert_eq!(variety.harvest_schedule, vec![0,0,0,4,5,5]);
     assert_eq!(variety.planting_schedule[3], false);
     assert_eq!(variety.planting_schedule[4], true);
     assert_eq!(variety.planting_schedule[8], true);
@@ -140,8 +158,8 @@ fn variety_from_json() {
     assert_eq!(variety.instructions["-6"], "Seed <variety> into a 64 tray and label it <label>");
     assert_eq!(variety.instructions["0"], "Transplant <variety> from pots labelled <label> into bed <bed>");
     assert_eq!(variety.value_per_unit, 100);
+    assert_eq!(variety.harvestable_by_week[0], false);
     assert_eq!(variety.harvestable_by_week[1], true);
-    assert_eq!(variety.harvestable_by_week[2], false);
 }
 
 impl Variety {

@@ -67,7 +67,7 @@ fn params_from_json() {
         {
             "name": "lettuce",
             "requirements": [ ],
-            "harvest_schedule": [ 0, 1, 2, 3 ],
+            "harvest_schedule": "0:3,4,5:2",
             "planting_schedule": "3,4,10-20",
             "instructions": {
                 "-2": "Seed <variety> into a 144 tray and label it <label>",
@@ -79,7 +79,7 @@ fn params_from_json() {
         {
             "name": "tomato",
             "requirements": [ "polytunnel" ],
-            "harvest_schedule": [ 0, 1, 2, 3 ],
+            "harvest_schedule": "0:3,4,5:2",
             "planting_schedule": "3,4,10-20",
             "instructions": {
                 "-6": "Seed <variety> into a 64 tray and label it <label>",
@@ -104,8 +104,7 @@ fn params_from_json() {
     assert_eq!(params.varieties[2].name, "tomato");
     assert!(params.varieties[2].requirements.contains(&String::from("polytunnel")));
     assert!(!params.varieties[2].requirements.contains(&String::from("magic")));
-    assert_eq!(params.varieties[1].harvest_schedule.len(), 4);
-    assert_eq!(params.varieties[1].harvest_schedule[2], 2);
+    assert_eq!(params.varieties[1].harvest_schedule, vec![0,0,0,4,5,5]);
     assert_eq!(params.varieties[2].instructions["-6"], "Seed <variety> into a 64 tray and label it <label>");
     assert_eq!(params.varieties[2].instructions["0"], "Transplant <variety> from pots labelled <label> into bed <bed>");
 
@@ -477,7 +476,7 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
             "name": "Lettuce-Indoor",
             "planting_schedule": "0-51",
             "requirements": [ "polytunnel" ],
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100],
+            "harvest_schedule": "0:8,100:3",
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
                 "-1": "Harden off <variety> tray <label>",
@@ -489,7 +488,7 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         {
             "name": "Spinach-Summer",
             "planting_schedule": "9-20",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 125, 125, 125, 125 ],
+            "harvest_schedule": "0:8,125:4",
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
                 "-1": "Harden off <variety> tray <label>",
@@ -501,7 +500,7 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         {
             "name": "Spinach-Winter",
             "planting_schedule": "40-48",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 125, 125, 125, 125 ],
+            "harvest_schedule": "0:12,125:4",
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
                 "-1": "Harden off <variety> tray <label>",
@@ -513,7 +512,7 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         {
             "name": "Radish",
             "planting_schedule": "9-45",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 50 ],
+            "harvest_schedule": "0:5,50",
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
                 "-1": "Harden off <variety> tray <label>",
@@ -525,7 +524,7 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         {
             "name": "Lettuce-Outdoor",
             "planting_schedule": "8-30",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100 ],
+            "harvest_schedule": "0:13,100:3",
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
                 "-1": "Harden off <variety> tray <label>",
@@ -538,7 +537,7 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
             "name": "Tomato",
             "requirements": [ "polytunnel" ],
             "planting_schedule": "9-18",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120 ],
+            "harvest_schedule": "0:15,120:11",
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
                 "-1": "Harden off <variety> tray <label>",
@@ -550,7 +549,7 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         {
             "name": "Carrot-Summer",
             "planting_schedule": "7-14",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 25, 25, 25 ],
+            "harvest_schedule": "0:16,25:4",
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
                 "-1": "Harden off <variety> tray <label>",
@@ -562,7 +561,7 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         {
             "name": "Carrot-Winter",
             "planting_schedule": "35-45",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 25, 25, 25 ],
+            "harvest_schedule": "0:20,25,4",
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
                 "-1": "Harden off <variety> tray <label>",
@@ -574,7 +573,7 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         {
             "name": "Swede-Summer",
             "planting_schedule": "16-20",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 20, 20, 20, 20, 20, 20, 20 ],
+            "harvest_schedule": "0:16,20:8",
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
                 "-1": "Harden off <variety> tray <label>",
@@ -586,7 +585,7 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         {
             "name": "Swede-Winter",
             "planting_schedule": "30-40",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 20, 20, 20, 20, 20, 20, 20 ],
+            "harvest_schedule": "0:18,20:8",
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
                 "-1": "Harden off <variety> tray <label>",
@@ -598,7 +597,7 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         {
             "name": "BBean",
             "planting_schedule": "20-28",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30 ],
+            "harvest_schedule": "0:24,30",
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
                 "-1": "Harden off <variety> tray <label>",
@@ -610,7 +609,7 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         {
             "name": "Brocoli",
             "planting_schedule": "36-42",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22 ],
+            "harvest_schedule": "0:24,22",
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
                 "-1": "Harden off <variety> tray <label>",
@@ -622,7 +621,7 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         {
             "name": "SOnion",
             "planting_schedule": "32-44",
-            "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 120, 120, 120 ],
+            "harvest_schedule": "0:20,120:3",
             "instructions": {
                 "-2": "Label a 144 tray <label> and seed it with 6 grams of <variety> seed",
                 "-1": "Harden off <variety> tray <label>",
@@ -632,4 +631,4 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
             "value_per_unit": 55
         }
     ]
-}"#;
+}"#; 
