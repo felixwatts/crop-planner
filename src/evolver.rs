@@ -1,10 +1,12 @@
+use crate::constant::VarietyId;
 use crate::rand::Rand;
 use crate::params::Params;
 use crate::genome::Genome;
 use crate::constant::{POPULATION_SIZE};
+use std::io::Write;
 
-// Implements the evolutionary algorithm to find a Genome that represents
-// a Phenome with a high score
+// Implements the evolutionary algorithm to find a planting schedule that
+// that has a high fitness according to the Evaluator
 pub struct Evolver<'a> {
     rand: Rand,
     params: &'a Params,
@@ -13,24 +15,37 @@ pub struct Evolver<'a> {
 
 impl<'a> Evolver<'a> {
 
-    pub fn new<'b>(params: &'b Params) -> Evolver<'b> {
+    pub fn new(params: &'a Params) -> Evolver<'a> {
         let rand = Rand::new(&params);
         let pop = vec!(Genome::new(&params); POPULATION_SIZE);
 
-        let mut evolver = Evolver {
+        Evolver {
             rand: rand,
             params: params,
             pop: pop,
-        };
+        }
+    }
 
-        for i in 0..POPULATION_SIZE {
-            evolver.pop[i].randomize(&mut evolver.rand);
+    pub fn solve(&mut self) -> Vec<VarietyId> {
+        let mut num_gens_without_improvement = 0;
+        let mut best_fitness = std::i32::MIN;
+        while num_gens_without_improvement < 1000 {
+            self.step();
+            let fitness = self.get_best_solution().to_evaluator().get_fitness();
+            if fitness > best_fitness {
+                best_fitness = fitness;
+                num_gens_without_improvement = 0;
+
+                print!(".");
+                std::io::stdout().flush().expect("internal error");
+            } else {
+                num_gens_without_improvement += 1;
+            }
         }
 
-        // initial sort by fitness
-        evolver.step();
+        println!();
 
-        evolver
+        self.get_best_solution().get_genes()     
     }
 
     pub fn step(&mut self) {
@@ -70,6 +85,6 @@ impl<'a> Evolver<'a> {
     }
 
     fn sort_by_fitness(&mut self, population: &mut Vec<Genome<'a>>) {
-        population.sort_by_cached_key(|p| p.to_phenome().score());
+        population.sort_by_cached_key(|p| p.to_evaluator().get_fitness());
     }
 }

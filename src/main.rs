@@ -1,5 +1,4 @@
 mod constant;
-mod harvest_plan;
 mod rand;
 mod genome;
 mod evolver;
@@ -11,14 +10,15 @@ mod cli;
 mod repo;
 mod bed_plan;
 mod tasks;
-mod phenome;
+mod evaluator;
+mod formatter;
 
 #[macro_use] extern crate lazy_static;
 
 use structopt::StructOpt;
 use crate::cli::*;
 use crate::repo::Repo;
-use std::io::prelude::*; 
+
 use simple_error::*;                                                          
 
 fn main() {
@@ -65,13 +65,11 @@ fn print(cmd: &crate::cli::ParamsPrint) -> Result<(), Box<dyn std::error::Error>
 
 fn print_bed(bed_name: &std::string::String) -> Result<(), Box<dyn std::error::Error>> {
     let repo = require_repo()?;
-    let sol = repo.require_solution()?;
+    let planting_schedule = repo.require_solution()?;
     
     let params = repo.get_params()?;
     let bed = require_bed(bed_name, &params)?;
-    let genome = crate::genome::Genome::from_genes(sol, &params);
-    let phenome = genome.to_phenome();
-    let bed_plan = phenome.get_bed_plan(bed);
+    let bed_plan = crate::bed_plan::BedPlan::new(bed, planting_schedule, &params);
     println!("{}", bed_plan);
     Ok(())
 }
@@ -83,11 +81,10 @@ fn print_bed_week(bed: &std::string::String, week: usize) -> Result<(), Box<dyn 
 
 fn print_week(week: usize) -> Result<(), Box<dyn std::error::Error>> {
     let repo = require_repo()?;
-    let genes = repo.require_solution()?;
+    let planting_schedule = repo.require_solution()?;
     let params = repo.get_params()?;
-    let genome = crate::genome::Genome::from_genes(genes, &params);
-    let phenome = genome.to_phenome();
-    let tasks = phenome.get_tasks();    
+    let evaluator = crate::evaluator::Evaluator::new(&params, &planting_schedule);
+    let tasks = evaluator.get_tasks();    
     let week_instructions = tasks.get(week);
 
     println!("Tasks for week #{}", week);
@@ -101,12 +98,10 @@ fn print_week(week: usize) -> Result<(), Box<dyn std::error::Error>> {
 
 fn print_solution() -> Result<(), Box<dyn std::error::Error>> {
     let repo = require_repo()?;
-    let genes = repo.require_solution()?;
+    let sol = repo.require_solution()?;
     let params = repo.get_params()?;
-    let genome = crate::genome::Genome::from_genes(genes, &params);
-    let phenome = genome.to_phenome();
-    let harvest_plan = phenome.get_harvest_plan();
-    println!("{}", &harvest_plan);
+    let formatter = crate::formatter::Formatter::new(&params, &sol);
+    println!("{}", &formatter);
     Ok(())
 }
 
@@ -126,41 +121,14 @@ fn require_repo() -> Result<crate::repo::Repo, Box<dyn std::error::Error>> {
 fn solve() -> Result<(), Box<dyn std::error::Error>> {
     let mut repo = Repo::new(&std::path::PathBuf::from("."));
     repo.load()?;
-
     repo.require_no_solution()?;
 
     let params = repo.get_params()?;
-    let mut evolver = evolver::Evolver::new(&params);
+    let mut evolver = crate::evolver::Evolver::new(&params);
+    let solution = evolver.solve();
 
-    let mut best_score = std::i32::MIN;
-    let mut gens_without_improvement = 0;
-
-    loop {
-
-        if gens_without_improvement > 1000 {
-            break;
-        }
-
-        evolver.step();
-
-        let score = evolver.get_best_solution().to_phenome().score();
-
-        if score > best_score {
-            best_score = score;
-            gens_without_improvement = 0;
-
-            print!(".");
-            std::io::stdout().flush()?;
-            
-        } else {
-            gens_without_improvement += 1;
-        }
-    };
-
-    repo.put_solution(evolver.get_best_solution())?;
+    repo.put_solution(solution)?;
     repo.save()?;
-
-    println!("");
 
     Ok(())
 }

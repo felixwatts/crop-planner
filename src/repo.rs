@@ -1,4 +1,4 @@
-use crate::genome::Genome;
+use crate::constant::VarietyId;
 use std::fs;
 use std::error::Error;
 use crate::common::*;
@@ -77,8 +77,8 @@ impl Repo {
         Ok(())
     }
 
-    pub fn put_solution(&mut self, sol: &Genome)-> Result<(), Box<dyn Error>> {
-        self.solution = Some(sol.get_genes());
+    pub fn put_solution(&mut self, sol: Vec<VarietyId>)-> Result<(), Box<dyn Error>> {
+        self.solution = Some(sol);
         self.params_hash = self.get_params_hash()?;
         Ok(())
     }
@@ -89,11 +89,11 @@ impl Repo {
             Some(sol) => {
                 match self.is_params_unchanged() {
                     Ok(true) => Ok(&sol),
-                    Ok(false) => bail!("The parameters have changed and the solution must be regenerated. Try 'harvest solve'"),
+                    Ok(false) => bail!("The parameters have changed and the solution must be regenerated. Try 'harvest plan'"),
                     Err(e) => Err(e)
                 }
             },
-            None => bail!("The is no solution. Try 'harvest solve'")
+            None => bail!("The is no solution. Try 'harvest plan'")
         }
     }
 
