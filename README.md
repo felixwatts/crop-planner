@@ -40,20 +40,25 @@ The program will run for a few minutes while it explores the vast number of diff
 ```
 $> harvest print
 
-           0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
-Spinach    0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 32 56 72 72 48 32  8 24 24 24 48 24 24 72 96 88 56 32  8  0  8 16 16 24 16  8  8  0  0  0  0  0  0  0  0  0
-Radish     0  0  0  0  0  0  0  0  0  0  0  0120200200200200195195175190200200155195185200200200195200195180195175130170200160150135  0  0  0  0  0  0  0  0  0  0  0
-Lettuce    0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  5 15 20 25 25 25 30 30 25 20 25 20 25 25 25 25 25 15 15 15 10  5  5  0  0  0  0  0  0  0  0  0  0  0
-Tomato     0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
-Carrot     0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 30 30 30 30  0  0  0  0  0  0  0  0  0 30 60120150150150210180150120  0
-Swede      0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
-BBean      0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
-Brocoli    0  0  0  0 50120180200190200200200200200200200180180160150140100 40  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
-SOnion   200200200200190200190230200200190180150100  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 40 60 70130
+       Week  Lettuce-I  Spinach-S  Spinach-W     Radish  Lettuce-O     Tomato  Carrot-Su  Carrot-Wi  Swede-Sum  Swede-Win      BBean    Brocoli     SOnion
+          0         0%                    0%                                                                           0%         0%                    0%
+          1         0%                    0%                                                                           0%                               0%
+          2         0%                    0%                                                                           0%                               0%
+          3         0%                    0%                                                     0%                    0%                               0%
+< SNIP >          
+          51        83%                                                                                               100%        50%                      
+
+Utilization: 67%
+Satisfaction: 63%
+Profit: 15224.74
 $>
 ```
 
-The above command prints out a table overview of the year. Each column is a week and each row is a variety. Each cell shows the number of harvestable units of that variety in that week
+The above command prints out a table overview of the year. Each column is a variety of crop and each row is a week in the season. Each cell shows the percentage of market saturation that has been achieved for that variety in that week.
+
+After the table, some statistics about the plan are printed. More on these later.
+
+> Note that the plan generated in this example is quite poor, because it starts on January 1st with all beds empty. In order to be profitable, a market gardener should have crops overwintering so that beds are not left empty and crops are ready to harvest early in the season. For more on this see [Continuing a Plan into the Following Year](#continuing-a-plan-into-the-following-year)
 
 You can also look at an individual bed in more detail
 
@@ -61,13 +66,13 @@ You can also look at an individual bed in more detail
 $> harvest print -b ~bA11
 Bed ~bA11
 
-Week     Variety
-8        Radish
-17       Radish
-22       Radish
-29       SOnion
+Week     Variety  
+0        Lettuce-Indoor
+5        Lettuce-Indoor
+18       Tomato   
+45       Carrot-Winter
 
-Utilization: 85%
+Utilization: 94%
 
 $>
 ```
@@ -77,12 +82,14 @@ Finally, you can get instructions to follow for a given week
 ```
 $> harvest print -w 12
 Tasks for week #12
-- Harvest 10 units of Radish from bed ~bA11
-- Harden off Radish tray ~bA12-13
-- Harvest 10 units of SOnion from bed ~bA32
-- Harvest 10 units of Brocoli from bed ~bA41
-- Label a 144 tray ~bB22-14 and seed it with 6 grams of Radish seed
-...
+- Transplant Lettuce-Outdoor from tray ~bA33-12 into bed ~bA33
+- Transplant Lettuce-Indoor from tray ~bA41-12 into bed ~bA41
+- Harvest 100 units of Lettuce-Indoor from bed ~bB12
+- Harvest 100 units of Lettuce-Indoor from bed ~bB21
+- Harvest 100 units of Lettuce-Indoor from bed ~bB22
+- Harvest 100 units of Lettuce-Indoor from bed ~bB31
+- Label a 144 tray ~bB32-14 and seed it with 6 grams of Lettuce-Indoor seed
+<SNIP>
 $>
 ```
 
@@ -92,7 +99,7 @@ For more options and help, run harvest without arguments:
 $> harvest
 ```
 
-## Weeks, Beds, Varieties and Baskets
+## Weeks, Beds and Varieties
 
 Harvest is built around some core concepts which it will be useful to familiarize yourself with...
 
@@ -102,12 +109,9 @@ Space is divided into **beds**. Each bed represents a single growing space in yo
 a size and some other properties which we will discuss later. You will need to tell harvest what beds you have.
 
 Plant **varieties** in harvest represent the different types of crop you might want to grow. Each variety has a
-name, some information about when it can be planted, its days to maturity, yield and some other properties we'll discuss later. 
+name, some information about when it can be planted, its days to maturity, yield, market value and some other properties we'll discuss later. 
 
 You can either define your own varieties, use some that have been published by other users or start with published varieties and modify them to your own liking.
-
-In order to tell harvest what you want to get out of your garden, you use **basket**s. A basket defines
-what you want to harvest from the garden in a given week. Harvest will try to match your garden's output to your baskets as closely as possible.
 
 ## Beds
 
@@ -176,7 +180,7 @@ For the subsequent year, we start a new harvest project but use the `continue` c
 ```
 $> mkdir my_farm_2020
 $> cd my_farm_2020
-$> harvest continue ../may_farm_2019
+$> harvest continue ../my_farm_2019
 ```
 
 Last year's beds, varieties and plan will be imported. Now we can plan as normal:
