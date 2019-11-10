@@ -67,7 +67,7 @@ fn params_from_json() {
         {
             "name": "lettuce",
             "requirements": [ ],
-            "harvest_schedule": [ 0, 1, 2, 3 ],
+            "harvest_schedule": "0:3,4,5:2",
             "planting_schedule": "3,4,10-20",
             "instructions": {
                 "-2": "Seed <variety> into a 144 tray and label it <label>",
@@ -79,7 +79,7 @@ fn params_from_json() {
         {
             "name": "tomato",
             "requirements": [ "polytunnel" ],
-            "harvest_schedule": [ 0, 1, 2, 3 ],
+            "harvest_schedule": "0:3,4,5:2",
             "planting_schedule": "3,4,10-20",
             "instructions": {
                 "-6": "Seed <variety> into a 64 tray and label it <label>",
@@ -104,8 +104,7 @@ fn params_from_json() {
     assert_eq!(params.varieties[2].name, "tomato");
     assert!(params.varieties[2].requirements.contains(&String::from("polytunnel")));
     assert!(!params.varieties[2].requirements.contains(&String::from("magic")));
-    assert_eq!(params.varieties[1].harvest_schedule.len(), 4);
-    assert_eq!(params.varieties[1].harvest_schedule[2], 2);
+    assert_eq!(params.varieties[1].harvest_schedule, vec![0,0,0,4,5,5]);
     assert_eq!(params.varieties[2].instructions["-6"], "Seed <variety> into a 64 tray and label it <label>");
     assert_eq!(params.varieties[2].instructions["0"], "Transplant <variety> from pots labelled <label> into bed <bed>");
 
