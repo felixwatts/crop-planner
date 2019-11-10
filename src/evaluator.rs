@@ -56,19 +56,20 @@ impl<'a> Evaluator<'a> {
     }
 
     pub fn get_profit(&self) -> i32 {
-        let mut result = 0;
+        let cost: i32 = self.planting_schedule.iter().map(|x| match x { 0 => 0, _ => 1}).sum();
+        let mut profit = -cost;
 
         let harvest_plan = self.get_harvest_plan();
         for variety in 0..self.params.varieties.len() {
-            for week in 0..SEASON_LENGTH*2 {
+            for week in 0..SEASON_LENGTH {
                 let harvestable_units = harvest_plan[variety][week];
                 let sellable_units = std::cmp::min(self.params.num_baskets, harvestable_units);
                 let val = sellable_units * self.params.varieties[variety].value_per_unit;
-                result += val; 
+                profit += val; 
             }
         }
 
-        result
+        profit
     }
 
     pub fn get_bed_plan(&'a self, bed: usize) -> BedPlan<'a> {

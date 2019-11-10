@@ -32,7 +32,7 @@ impl BedPlan<'_> {
     }
 
     pub fn write_instructions(&self, tasks: &mut Tasks) {
-        for bed_week in self.iter() {
+        for bed_week in self.iter().take(SEASON_LENGTH) {
             self.write_planting_instructions(&bed_week, tasks);
             self.write_harvesting_instructions(&bed_week, tasks);
         }
