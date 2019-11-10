@@ -44,14 +44,6 @@ impl TryFrom<&JsonValue> for Params {
 }
 
 impl Params {
-    pub fn genome_size(&self) -> usize {
-        self.num_beds() * SEASON_LENGTH
-    }
-
-    pub fn num_beds(&self) -> usize {
-        self.beds.len()
-    }
-
     pub fn get_bed(&self, name: &str) -> Option<usize> {
         self.beds.iter().position(|b| b.name == name)
     }
@@ -74,7 +66,6 @@ fn params_from_json() {
     "varieties": [
         {
             "name": "lettuce",
-            "basket_category": "greens",
             "requirements": [ ],
             "harvest_schedule": [ 0, 1, 2, 3 ],
             "planting_schedule": "3,4,10-20",
@@ -87,7 +78,6 @@ fn params_from_json() {
         },
         {
             "name": "tomato",
-            "basket_category": "tomato",
             "requirements": [ "polytunnel" ],
             "harvest_schedule": [ 0, 1, 2, 3 ],
             "planting_schedule": "3,4,10-20",
@@ -104,7 +94,7 @@ fn params_from_json() {
 
     let params = Params::try_from(&js).expect("failed to parse");
 
-    assert_eq!(params.num_beds(), 2);
+    assert_eq!(params.beds.len(), 2);
     assert_eq!(params.beds[1].name, "~b01");
     assert!(params.beds[1].properties.contains(&String::from("polytunnel")));
     assert!(!params.beds[1].properties.contains(&String::from("magic")));
@@ -485,7 +475,6 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
     "varieties": [
         {
             "name": "Lettuce-Indoor",
-            "basket_category": "greens",
             "planting_schedule": "0-51",
             "requirements": [ "polytunnel" ],
             "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100],
@@ -499,7 +488,6 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         },
         {
             "name": "Spinach-Summer",
-            "basket_category": "greens",
             "planting_schedule": "9-20",
             "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 125, 125, 125, 125 ],
             "instructions": {
@@ -512,7 +500,6 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         },
         {
             "name": "Spinach-Winter",
-            "basket_category": "greens",
             "planting_schedule": "40-48",
             "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 125, 125, 125, 125 ],
             "instructions": {
@@ -525,7 +512,6 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         },
         {
             "name": "Radish",
-            "basket_category": "greens",
             "planting_schedule": "9-45",
             "harvest_schedule": [ 0, 0, 0, 0, 0, 50 ],
             "instructions": {
@@ -538,7 +524,6 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         },
         {
             "name": "Lettuce-Outdoor",
-            "basket_category": "greens",
             "planting_schedule": "8-30",
             "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100 ],
             "instructions": {
@@ -551,7 +536,6 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         },
         {
             "name": "Tomato",
-            "basket_category": "fruits",
             "requirements": [ "polytunnel" ],
             "planting_schedule": "9-18",
             "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120 ],
@@ -565,7 +549,6 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         },
         {
             "name": "Carrot-Summer",
-            "basket_category": "roots",
             "planting_schedule": "7-14",
             "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 25, 25, 25 ],
             "instructions": {
@@ -578,7 +561,6 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         },
         {
             "name": "Carrot-Winter",
-            "basket_category": "roots",
             "planting_schedule": "35-45",
             "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 25, 25, 25 ],
             "instructions": {
@@ -591,7 +573,6 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         },
         {
             "name": "Swede-Summer",
-            "basket_category": "roots",
             "planting_schedule": "16-20",
             "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 20, 20, 20, 20, 20, 20, 20 ],
             "instructions": {
@@ -604,7 +585,6 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         },
         {
             "name": "Swede-Winter",
-            "basket_category": "roots",
             "planting_schedule": "30-40",
             "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 20, 20, 20, 20, 20, 20, 20 ],
             "instructions": {
@@ -617,7 +597,6 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         },
         {
             "name": "BBean",
-            "basket_category": "fruits",
             "planting_schedule": "20-28",
             "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30 ],
             "instructions": {
@@ -630,7 +609,6 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         },
         {
             "name": "Brocoli",
-            "basket_category": "greens",
             "planting_schedule": "36-42",
             "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22 ],
             "instructions": {
@@ -643,7 +621,6 @@ pub const DEFAULT_PARAMS_JSON: &'static str = r#"{
         },
         {
             "name": "SOnion",
-            "basket_category": "greens",
             "planting_schedule": "32-44",
             "harvest_schedule": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 120, 120, 120 ],
             "instructions": {

@@ -92,17 +92,17 @@ impl<'a> Evaluator<'a> {
 
     pub fn get_bed_utilization(&self) -> f32 {
         let mut utilization = 0.0;
-        for bed in 0..self.params.num_beds() {
+        for bed in 0..self.params.beds.len() {
             utilization += self.get_bed_plan(bed).utilization();
         }
-        utilization /= self.params.num_beds() as f32;
+        utilization /= self.params.beds.len() as f32;
 
         utilization
     }
 
     pub fn get_tasks(&self) -> Tasks {
         let mut result = Tasks::new();
-        for bed in 0..self.params.num_beds() {
+        for bed in 0..self.params.beds.len() {
             let plan = self.get_bed_plan(bed);
             plan.write_instructions(&mut result);
         }

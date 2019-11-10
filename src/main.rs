@@ -121,14 +121,10 @@ fn require_repo() -> Result<crate::repo::Repo, Box<dyn std::error::Error>> {
 fn solve() -> Result<(), Box<dyn std::error::Error>> {
     let mut repo = Repo::new(&std::path::PathBuf::from("."));
     repo.load()?;
-
     repo.require_no_solution()?;
 
     let params = repo.get_params()?;
-    //let mut planner = crate::cf::CfPlanner::new(&params);
     let mut evolver = crate::evolver::Evolver::new(&params);
-    //let genes = planner.plan();
-
     let solution = evolver.solve();
 
     repo.put_solution(solution)?;

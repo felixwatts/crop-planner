@@ -13,7 +13,7 @@ pub struct Genome<'a> {
 impl Genome<'_> {
     pub fn new<'a>(params: &'a Params) -> Genome<'a> {
         Genome {
-            genes: vec![ 0; params.genome_size() ],
+            genes: vec![ 0; SEASON_LENGTH * params.beds.len() ],
             params: params
         }
     }

@@ -23,7 +23,7 @@ impl Rand {
         let mut plantable_varieties_by_week_by_bed = Vec::<Vec<Vec<VarietyId>>>::new();
         let mut dist_plantable_variety_by_week_by_bed = Vec::<Vec<Option<Uniform<VarietyId>>>>::new();
 
-        for bed in 0..params.num_beds() {
+        for bed in 0..params.beds.len() {
             let mut plantable_varieties_by_week = std::iter::repeat(vec![ ])
                 .take(SEASON_LENGTH)
                 .collect::<Vec<_>>();
@@ -50,7 +50,7 @@ impl Rand {
 
         return Rand{
             rng: rand::thread_rng(),
-            dist_gene: Uniform::from(0..params.genome_size()),
+            dist_gene: Uniform::from(0..params.beds.len()*SEASON_LENGTH),
             dist_selection: WeightedIndex::new(weights).unwrap(),
             dist_parent: Bernoulli::new(0.5).unwrap(),
             plantable_varieties_by_week_by_bed: plantable_varieties_by_week_by_bed,

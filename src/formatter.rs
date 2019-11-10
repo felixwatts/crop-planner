@@ -50,6 +50,7 @@ impl<'a> Display for Formatter<'a> {
             writeln!(f)?;
         }
 
+        writeln!(f)?;
         writeln!(f, "Utilization: {:.0}%", evaluator.get_bed_utilization() * 100.0)?;
         writeln!(f, "Satisfaction: {:.0}%", evaluator.get_basket_satisfaction() * 100.0)?;
         writeln!(f, "Profit: {:.2}", evaluator.get_profit() as f32 / 100.0)
