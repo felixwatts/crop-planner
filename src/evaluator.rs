@@ -34,6 +34,8 @@ impl<'a> Evaluator<'a> {
         harvest_plan
     }
 
+    // Returns a number between 0 and 1 representing the extent to which each variety that could
+    // possibly be harvested in each week can be harvested with enough quantity to fill the market
     pub fn get_basket_satisfaction(&self) -> f32 {
 
         let harvest_plan = self.get_harvest_plan();
@@ -56,6 +58,7 @@ impl<'a> Evaluator<'a> {
     }
 
     pub fn get_profit(&self) -> i32 {
+        // TODO model cost of production better
         let cost: i32 = self.planting_schedule.iter().map(|x| match x { 0 => 0, _ => 1}).sum();
         let mut profit = -cost;
 
@@ -70,10 +73,6 @@ impl<'a> Evaluator<'a> {
         }
 
         profit
-    }
-
-    pub fn get_bed_plan(&'a self, bed: usize) -> BedPlan<'a> {
-        BedPlan::new(bed, &self.planting_schedule, self.params)
     }
 
     pub fn get_bed_utilization(&self) -> f32 {
@@ -93,5 +92,9 @@ impl<'a> Evaluator<'a> {
             plan.write_instructions(&mut result);
         }
         result
+    }
+
+    fn get_bed_plan(&'a self, bed: usize) -> BedPlan<'a> {
+        BedPlan::new(bed, &self.planting_schedule, self.params)
     }
 }

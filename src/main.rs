@@ -65,12 +65,11 @@ fn print(cmd: &crate::cli::ParamsPrint) -> Result<(), Box<dyn std::error::Error>
 
 fn print_bed(bed_name: &std::string::String) -> Result<(), Box<dyn std::error::Error>> {
     let repo = require_repo()?;
-    let sol = repo.require_solution()?;
+    let planting_schedule = repo.require_solution()?;
     
     let params = repo.get_params()?;
     let bed = require_bed(bed_name, &params)?;
-    let evaluator = crate::evaluator::Evaluator::new(&params, &sol);
-    let bed_plan = evaluator.get_bed_plan(bed);
+    let bed_plan = crate::bed_plan::BedPlan::new(bed, planting_schedule, &params);
     println!("{}", bed_plan);
     Ok(())
 }
