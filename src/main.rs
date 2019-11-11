@@ -12,6 +12,7 @@ mod bed_plan;
 mod tasks;
 mod evaluator;
 mod formatter;
+mod plan;
 
 #[macro_use] extern crate lazy_static;
 
@@ -69,11 +70,11 @@ fn print(cmd: &crate::cli::ParamsPrint) -> Result<(), Box<dyn std::error::Error>
 
 fn print_bed(bed_name: &std::string::String) -> Result<(), Box<dyn std::error::Error>> {
     let repo = require_repo()?;
-    let planting_schedule = repo.require_solution()?;
+    let plan = repo.require_plan()?;
     
     let params = repo.get_params()?;
     let bed = require_bed(bed_name, &params)?;
-    let bed_plan = crate::bed_plan::BedPlan::new(bed, planting_schedule, &params);
+    let bed_plan = crate::bed_plan::BedPlan::new(bed, plan, &params);
     println!("{}", bed_plan);
     Ok(())
 }
@@ -85,9 +86,9 @@ fn print_bed_week(bed: &std::string::String, week: usize) -> Result<(), Box<dyn 
 
 fn print_week(week: usize) -> Result<(), Box<dyn std::error::Error>> {
     let repo = require_repo()?;
-    let planting_schedule = repo.require_solution()?;
+    let plan = repo.require_plan()?;
     let params = repo.get_params()?;
-    let evaluator = crate::evaluator::Evaluator::new(&params, &planting_schedule);
+    let evaluator = crate::evaluator::Evaluator::new(&params, &plan);
     let tasks = evaluator.get_tasks();    
     let week_instructions = tasks.get(week);
 
@@ -102,7 +103,7 @@ fn print_week(week: usize) -> Result<(), Box<dyn std::error::Error>> {
 
 fn print_solution() -> Result<(), Box<dyn std::error::Error>> {
     let repo = require_repo()?;
-    let sol = repo.require_solution()?;
+    let sol = repo.require_plan()?;
     let params = repo.get_params()?;
     let formatter = crate::formatter::Formatter::new(&params, &sol);
     println!("{}", &formatter);

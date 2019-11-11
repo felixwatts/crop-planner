@@ -1,21 +1,21 @@
+use crate::plan::Plan;
 use crate::constant::SEASON_LENGTH;
 use crate::tasks::Tasks;
-use crate::constant::VarietyId;
 use crate::params::Params;
 use crate::bed_plan::BedPlan;
 
 pub struct Evaluator<'a> {
     params: &'a Params,
-    planting_schedule: &'a Vec<VarietyId>
+    plan: &'a Plan
 }
 
 impl<'a> Evaluator<'a> {
     pub fn new(
         params: &'a Params, 
-        planting_schedule: &'a Vec<VarietyId>) -> Self {
+        plan: &'a Plan) -> Self {
         Evaluator {
             params: params,
-            planting_schedule: planting_schedule
+            plan: plan
         }
     }
 
@@ -74,7 +74,7 @@ impl<'a> Evaluator<'a> {
 
     fn _get_profit(&self, season_length: usize) -> i32 {
         // TODO model cost of production better
-        let cost: i32 = self.planting_schedule.iter().map(|x| match x { 0 => 0, _ => 1}).sum();
+        let cost: i32 = self.plan.get_num_plantings();
         let mut profit = -cost;
 
         let harvest_plan = self.get_harvest_plan();
@@ -110,6 +110,6 @@ impl<'a> Evaluator<'a> {
     }
 
     fn get_bed_plan(&'a self, bed: usize) -> BedPlan<'a> {
-        BedPlan::new(bed, &self.planting_schedule, self.params)
+        BedPlan::new(bed, &self.plan, self.params)
     }
 }

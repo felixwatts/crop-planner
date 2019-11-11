@@ -1,3 +1,4 @@
+use crate::plan::Plan;
 use crate::tasks::Tasks;
 use crate::variety::Variety;
 use crate::constant::WeekId;
@@ -8,19 +9,19 @@ use crate::bed::Bed;
 // Represents part of a crop plan relating to a single bed
 // Provides methods to extract instructions and statistics and print
 pub struct BedPlan<'a> {
-    planting_schedule: &'a [VarietyId],
-    planting_schedule_prior_year: &'a [VarietyId],
+    bed: usize,
+    plan: &'a Plan,
+    plan_previous_year: &'a Plan,
     params: &'a Params,
     def: &'a Bed
 }
 
 impl BedPlan<'_> {
-    pub fn new<'a>(bed: usize, planting_schedule: &'a Vec<VarietyId>, params: &'a Params) -> BedPlan<'a> {
-        let bed_planting_schedule = &planting_schedule[(bed*SEASON_LENGTH)..(bed*SEASON_LENGTH+SEASON_LENGTH)];
-        let bed_planting_schedule_prior_year = &params.planting_schedule_prior_year[(bed*SEASON_LENGTH)..(bed*SEASON_LENGTH+SEASON_LENGTH)];
+    pub fn new<'a>(bed: usize, plan: &'a Plan, params: &'a Params) -> BedPlan<'a> {
         BedPlan{
-            planting_schedule: bed_planting_schedule,
-            planting_schedule_prior_year: bed_planting_schedule_prior_year,
+            bed: bed,
+            plan: plan,
+            plan_previous_year: &params.plan_previous_year,
             params: params,
             def: &params.beds[bed]
         }
@@ -28,6 +29,18 @@ impl BedPlan<'_> {
 
     pub fn iter<'a>(&'a self) -> BedPlanIterator<'a> {
         BedPlanIterator::new(&self)
+    }
+
+    pub fn utilization(&self) -> f32 {
+
+        let mut occupied_weeks = 0.0;
+        for bed_week in self.iter().take(SEASON_LENGTH) {
+            match bed_week.get_growing_variety() {
+                Some(_) => occupied_weeks += 1.0,
+                None => ()
+            }
+        }
+        occupied_weeks / SEASON_LENGTH as f32
     }
 
     pub fn write_instructions(&self, tasks: &mut Tasks) {
@@ -75,20 +88,16 @@ impl BedPlan<'_> {
         };
     }
 
-    pub fn utilization(&self) -> f32 {
-
-        let mut occupied_weeks = 0.0;
-        for bed_week in self.iter().take(SEASON_LENGTH) {
-            match bed_week.get_growing_variety() {
-                Some(_) => occupied_weeks += 1.0,
-                None => ()
-            }
-        }
-        occupied_weeks / SEASON_LENGTH as f32
+    fn get_variety(&self, week: usize) -> VarietyId {
+        self.plan.get(self.bed, week)
     }
 
-    fn get_variety(&self, week: usize) -> VarietyId {
-        self.planting_schedule[week]
+    fn get_last_planting_week_previous_year(&self) -> Option<usize> {
+        self.plan_previous_year.get_last_planting_week(self.bed)
+    }
+
+    fn get_variety_previous_year(&self, week: usize) -> VarietyId {
+        self.plan_previous_year.get(self.bed, week)
     }
 }
 
@@ -136,7 +145,7 @@ pub struct BedPlanIterator<'a> {
 impl<'a> BedPlanIterator<'a> {
     pub fn new(bed_plan: &'a BedPlan<'a>) -> BedPlanIterator<'a> {
 
-        let planting_from_prior_year = bed_plan.planting_schedule_prior_year.iter().rposition(|&x| x != 0);
+        let planting_from_prior_year = bed_plan.get_last_planting_week_previous_year();
         match planting_from_prior_year {
             None =>
                 BedPlanIterator {
@@ -146,7 +155,7 @@ impl<'a> BedPlanIterator<'a> {
                     planted_age: 0,
                 },
             Some(prior_year_last_planting_week) => {
-                let planted_variety = bed_plan.planting_schedule_prior_year[prior_year_last_planting_week];
+                let planted_variety = bed_plan.get_variety_previous_year(prior_year_last_planting_week);
                 let planted_age = SEASON_LENGTH - prior_year_last_planting_week;
                 let is_alive = planted_age < bed_plan.params.varieties[planted_variety].get_longevity();
 
@@ -154,7 +163,7 @@ impl<'a> BedPlanIterator<'a> {
                     BedPlanIterator {
                         bed_plan: bed_plan,
                         week: 0,
-                        planted_variety: bed_plan.planting_schedule_prior_year[prior_year_last_planting_week],
+                        planted_variety: planted_variety,
                         planted_age: SEASON_LENGTH - prior_year_last_planting_week
                     }
                 } else {
@@ -178,8 +187,8 @@ impl<'a> Iterator for BedPlanIterator<'a> {
         match self.week {
             TWO_SEASONS => None,
             _ => {
-                if self.week < SEASON_LENGTH && self.bed_plan.planting_schedule[self.week] != 0 {
-                    self.planted_variety = self.bed_plan.planting_schedule[self.week];
+                if self.week < SEASON_LENGTH && self.bed_plan.get_variety(self.week) != 0 {
+                    self.planted_variety = self.bed_plan.get_variety(self.week);
                     self.planted_age = 0;
                 }
 
