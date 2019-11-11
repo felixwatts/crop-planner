@@ -1,4 +1,4 @@
-use crate::constant::VarietyId;
+use crate::plan::Plan;
 use crate::rand::Rand;
 use crate::params::Params;
 use crate::genome::Genome;
@@ -26,7 +26,7 @@ impl<'a> Evolver<'a> {
         }
     }
 
-    pub fn solve(&mut self) -> Vec<VarietyId> {
+    pub fn solve(&mut self) -> Plan {
         let mut num_gens_without_improvement = 0;
         let mut best_fitness = std::i32::MIN;
         while num_gens_without_improvement < 1000 {
@@ -45,7 +45,7 @@ impl<'a> Evolver<'a> {
 
         println!();
 
-        self.get_best_solution().get_genes()     
+        self.get_best_solution().to_plan()
     }
 
     pub fn step(&mut self) {
@@ -63,7 +63,7 @@ impl<'a> Evolver<'a> {
         // Elitism, best individual survives unchanged, means that best score can never decrease
         next[0] = self.get_best_solution().clone();
 
-        for i in 1..POPULATION_SIZE {
+        for i in 2..POPULATION_SIZE {
             self.spawn(&mut next[i]);
         }
     }

@@ -6,6 +6,9 @@ use rand::distributions::Bernoulli;
 use crate::params::Params;
 use crate::constant::{POPULATION_SIZE, SEASON_LENGTH, GeneId, VarietyId, SolutionId};
 
+#[cfg(test)]
+use crate::plan::Plan;
+
 // Provides randomization methods for the evolutionary algorithm
 pub struct Rand {
     rng: ThreadRng,
@@ -102,7 +105,7 @@ fn random_variety_meets_requirements() {
             crate::variety::Variety::dummy("var-2", vec!["rq-1", "rq-2"]),
         ],
         num_baskets: 120,
-        planting_schedule_prior_year: vec![0; 1 * SEASON_LENGTH]
+        plan_previous_year: Plan::new(1)
     };
 
     let mut subject = Rand::new(&params);
@@ -126,7 +129,7 @@ fn random_variety_satisfies_planting_schedule() {
         } ],
         varieties: vec![ crate::variety::Variety::dummy("var-0", vec![]) ],
         num_baskets: 120,
-        planting_schedule_prior_year: vec![0; 1 * SEASON_LENGTH]
+        plan_previous_year: Plan::new(1)
     };
 
     for i in 0..SEASON_LENGTH {
@@ -157,7 +160,7 @@ fn select_individual() {
         } ],
         varieties: vec![ crate::variety::Variety::dummy("var-1", vec![]) ],
         num_baskets: 120,
-        planting_schedule_prior_year: vec![0; 1 * SEASON_LENGTH]
+        plan_previous_year: Plan::new(1)
     };
     let mut subject = Rand::new(&params);
 

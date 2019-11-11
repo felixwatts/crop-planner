@@ -1,34 +1,38 @@
+use crate::plan::Plan;
 use crate::evaluator::Evaluator;
 use crate::params::Params;
-use crate::constant::{ SEASON_LENGTH, VarietyId };
+use crate::constant::SEASON_LENGTH;
 
 // Represents a crop plan encoded as a collection of genes
 // Provides methods that are the building blocks of the evolutionary algorithm
 #[derive(Clone)]
 pub struct Genome<'a> {
-    genes: Vec<VarietyId>,
+    plan: Plan,
     params: &'a Params
 }
 
 impl Genome<'_> {
     pub fn new<'a>(params: &'a Params) -> Genome<'a> {
         Genome {
-            genes: vec![ 0; SEASON_LENGTH * params.beds.len() ],
+            plan: Plan::new(params.beds.len()),
             params: params
         }
     }
 
     pub fn to_evaluator(&self) -> Evaluator {
-        Evaluator::new(&self.params, &self.genes)
+        Evaluator::new(&self.params, &self.plan)
     }
 
     pub fn cross(mother: &Self, father: &Self, child: &mut Self, rand: &mut crate::rand::Rand) {
-        for gene in 0..mother.genes.len() {
+        let genes_mother = mother.plan.get_data();
+        let genes_father = father.plan.get_data();
+        let genes_child = child.plan.get_data_mut();
+        for gene in 0..genes_mother.len() {
             let variety = match rand.random_parent() {
-                true => { mother.genes[gene] }
-                false => { father.genes[gene] }
+                true => { genes_mother[gene] }
+                false => { genes_father[gene] }
             };
-            child.genes[gene] = variety;
+            genes_child[gene] = variety;
         }
     }
 
@@ -41,20 +45,16 @@ impl Genome<'_> {
 
         let end_week = std::cmp::min(SEASON_LENGTH, week+self.params.varieties[variety].get_longevity());
 
+        let genes = self.plan.get_data_mut();
+
         for w in week..end_week {
-            self.genes[(bed*SEASON_LENGTH)+w] = 0;
+            genes[(bed*SEASON_LENGTH)+w] = 0;
         }
 
-        self.genes[gene] = variety
+        genes[gene] = variety
     }
 
-    pub fn get_genes(&self) -> Vec<usize> {
-        self.genes.clone()
-    }
-}
-
-impl std::convert::Into<json::JsonValue> for Genome<'_> {
-    fn into(self) -> json::JsonValue {
-        self.genes.clone().into()
+    pub fn to_plan(&self) -> Plan {
+        self.plan.clone()
     }
 }

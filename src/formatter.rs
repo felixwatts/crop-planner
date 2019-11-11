@@ -1,25 +1,25 @@
+use crate::plan::Plan;
 use crate::constant::SEASON_LENGTH;
 use core::fmt::Display;
-use crate::constant::VarietyId;
 use crate::params::Params;
 
 pub struct Formatter<'a> {
     params: &'a Params,
-    planting_schedule: &'a Vec<VarietyId>
+    plan: &'a Plan
 }
 
 impl<'a> Formatter<'a> {
-    pub fn new(params: &'a Params, planting_schedule: &'a Vec<VarietyId>) -> Formatter<'a> {
+    pub fn new(params: &'a Params, plan: &'a Plan) -> Formatter<'a> {
         Formatter{
             params: params,
-            planting_schedule: planting_schedule
+            plan: plan
         }
     }
 }
 
 impl<'a> Display for Formatter<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let evaluator = crate::evaluator::Evaluator::new(self.params, self.planting_schedule);
+        let evaluator = crate::evaluator::Evaluator::new(self.params, self.plan);
 
         let harvest_plan = evaluator.get_harvest_plan();
 

@@ -1,5 +1,4 @@
-use crate::constant::SEASON_LENGTH;
-use crate::constant::VarietyId;
+use crate::plan::Plan;
 use std::error::Error;
 use crate::bed::Bed;
 use crate::variety::Variety;
@@ -14,7 +13,7 @@ pub struct Params {
     pub beds: Vec<Bed>,
     pub varieties: Vec<Variety>,
     pub num_baskets: i32,
-    pub planting_schedule_prior_year: Vec<VarietyId>
+    pub plan_previous_year: Plan,
 }
 
 impl TryFrom<&JsonValue> for Params {
@@ -25,7 +24,7 @@ impl TryFrom<&JsonValue> for Params {
             varieties: vec![],
             beds: vec![],
             num_baskets: 0,
-            planting_schedule_prior_year: vec![0; 0]
+            plan_previous_year: Plan::new(0)
         };
 
         let value_json_obj = as_object(value)?;
@@ -37,13 +36,11 @@ impl TryFrom<&JsonValue> for Params {
         let beds_json_array = as_array(&value_json_obj["beds"])?;
         params.beds = beds_json_array.iter().map(|j| Bed::try_from(j)).collect::<Result<Vec<_>, _>>()?;
 
-        match &value_json_obj.get("planting_schedule_prior_year") {
+        match value_json_obj.get("planting_schedule_prior_year") {
             Some(planting_schedule_prior_year_json_obj) => {
-                let planting_schedule_prior_year_arr = as_array(&planting_schedule_prior_year_json_obj)?;
-                let planting_schedule_prior_year = planting_schedule_prior_year_arr.iter().map(|i| as_usize(i)).collect::<Result<Vec<_>, _>>()?;
-                params.planting_schedule_prior_year = planting_schedule_prior_year;
+                params.plan_previous_year = Plan::try_from(planting_schedule_prior_year_json_obj)?;
             },
-            None => params.planting_schedule_prior_year = vec![0; SEASON_LENGTH * params.beds.len()]
+            None => params.plan_previous_year = Plan::new(params.beds.len())
         }
         
 
