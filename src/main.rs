@@ -26,7 +26,7 @@ fn main() {
     let opt = crate::cli::Cli::from_args();
 
     let result = match opt.command {
-        Cmd::Init => init(),
+        Cmd::Init(params) => init(&params),
         Cmd::Solve => solve(),
         Cmd::Reset => reset(),
         Cmd::Print(params) => print(&params),
@@ -38,9 +38,13 @@ fn main() {
     };
 }
 
-fn init() -> Result<(), Box<dyn std::error::Error>> {
+fn init(params: &ParamsInit) -> Result<(), Box<dyn std::error::Error>> {
     let mut repo = Repo::new(&std::path::PathBuf::from("."));
-    repo.init()
+    match &params.cont {
+        None => repo.init()?,
+        Some(continue_path) => repo.init_continue(&continue_path)?
+    };
+    Ok(())
 }
 
 fn reset() -> Result<(), Box<dyn std::error::Error>> {

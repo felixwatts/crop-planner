@@ -1,6 +1,12 @@
 use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
+pub struct ParamsInit {
+    #[structopt(short, long)]
+    pub cont: Option<std::string::String>
+}
+
+#[derive(Debug, StructOpt)]
 pub struct ParamsPrint {
     #[structopt(short, long)]
     pub bed: Option<std::string::String>,
@@ -18,7 +24,7 @@ pub struct ParamsTasks {
 #[derive(Debug, StructOpt)]
 pub enum Cmd {
     #[structopt(name = "init", about = "Initialize a new harvest repository in the current directory")]
-    Init,
+    Init(ParamsInit),
 
     #[structopt(name = "plan", about = "Design a crop plan based on the current parameter settings")]
     Solve,

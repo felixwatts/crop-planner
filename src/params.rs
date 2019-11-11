@@ -1,8 +1,8 @@
+use crate::constant::SEASON_LENGTH;
 use crate::constant::VarietyId;
 use std::error::Error;
 use crate::bed::Bed;
 use crate::variety::Variety;
-use crate::constant::SEASON_LENGTH;
 use crate::common::*;
 use std::convert::TryFrom;
 use json::JsonValue;
@@ -37,7 +37,15 @@ impl TryFrom<&JsonValue> for Params {
         let beds_json_array = as_array(&value_json_obj["beds"])?;
         params.beds = beds_json_array.iter().map(|j| Bed::try_from(j)).collect::<Result<Vec<_>, _>>()?;
 
-        params.planting_schedule_prior_year = vec![0; SEASON_LENGTH * params.beds.len()];
+        match &value_json_obj.get("planting_schedule_prior_year") {
+            Some(planting_schedule_prior_year_json_obj) => {
+                let planting_schedule_prior_year_arr = as_array(&planting_schedule_prior_year_json_obj)?;
+                let planting_schedule_prior_year = planting_schedule_prior_year_arr.iter().map(|i| as_usize(i)).collect::<Result<Vec<_>, _>>()?;
+                params.planting_schedule_prior_year = planting_schedule_prior_year;
+            },
+            None => params.planting_schedule_prior_year = vec![0; SEASON_LENGTH * params.beds.len()]
+        }
+        
 
         Ok(params)
     }

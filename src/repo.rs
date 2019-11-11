@@ -41,6 +41,31 @@ impl Repo {
         Ok(())
     }
 
+    // Create a new repo in the current directory, continuing the plan
+    // in the specified directory
+    pub fn init_continue(&mut self, from: &str) -> Result<(), Box<dyn Error>> {
+        if self.is_initialized() {
+            bail!("Already initialized");
+        }
+
+        fs::create_dir_all(&self.path)?;
+
+        let mut repo_old = Repo::new(&std::path::PathBuf::from(from));
+        repo_old.load()?;
+
+        let params_old_path = repo_old.get_params_path();
+        let params_old_str = std::fs::read_to_string(params_old_path)?;
+        let mut params_old_json = json::parse(&params_old_str)?;
+        let plan_old = repo_old.require_solution()?;
+        params_old_json["planting_schedule_prior_year"] = json::from(plan_old.clone());
+
+        fs::write(self.get_params_path(), params_old_json.dump().as_bytes())?;
+        self.params_hash = self.get_params_hash()?;
+        self.save()?;
+
+        Ok(())
+    }
+
     // Drop the current solution
     pub fn reset(&mut self) {
         self.solution = None;
