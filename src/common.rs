@@ -24,7 +24,14 @@ pub fn as_string(thing: &JsonValue) -> Result<String, &'static str> {
     }
 }
 
-pub fn as_int(thing: &JsonValue) -> Result<i32, &'static str> {
+pub fn as_i32(thing: &JsonValue) -> Result<i32, &'static str> {
+    match thing {
+        JsonValue::Number(n) => Ok((*n).into()),
+        _ => Err("Expected JSON string")
+    }
+}
+
+pub fn as_u32(thing: &JsonValue) -> Result<u32, &'static str> {
     match thing {
         JsonValue::Number(n) => Ok((*n).into()),
         _ => Err("Expected JSON string")

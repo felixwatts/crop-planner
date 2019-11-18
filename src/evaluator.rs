@@ -1,6 +1,6 @@
 use crate::plan::Plan;
 use crate::constant::SEASON_LENGTH;
-use crate::tasks::Tasks;
+use crate::task::Tasks;
 use crate::params::Params;
 use crate::bed_plan::BedPlan;
 

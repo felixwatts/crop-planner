@@ -1,5 +1,5 @@
 use crate::plan::Plan;
-use crate::tasks::Tasks;
+use crate::task::Tasks;
 use crate::variety::Variety;
 use crate::constant::WeekId;
 use crate::constant::{VarietyId, SEASON_LENGTH};
@@ -54,9 +54,9 @@ impl BedPlan<'_> {
         match bed_week.get_planted_variety() {
             Some(planted_variety) => {
                 for week_offset in -52..52 {
-                    let instruction_template_opt = &planted_variety.instructions.get(&week_offset.to_string());
+                    let instruction_template_opt = &planted_variety.tasks.get(&week_offset.to_string());
                     if let Some(instruction_template) = instruction_template_opt {
-                        let instruction = instruction_template
+                        let instruction = instruction_template.description
                             .replace("<variety>", &planted_variety.name)
                             .replace("<label>", &format!("{}-{}", self.def.name, bed_week.week))
                             .replace("<bed>", &self.def.name);
@@ -78,8 +78,8 @@ impl BedPlan<'_> {
 
         let harvested_variety = bed_week.get_growing_variety().unwrap();
 
-        if let Some(harvest_instruction_template) = harvested_variety.instructions.get("harvest") {
-            let harvest_instruction = harvest_instruction_template
+        if let Some(harvest_instruction_template) = harvested_variety.tasks.get("harvest") {
+            let harvest_instruction = harvest_instruction_template.description
                 .replace("<variety>", &harvested_variety.name)
                 .replace("<label>", &format!("{}-{}", self.def.name, bed_week.week))
                 .replace("<units>", &bed_week.harvestable_units.to_string())

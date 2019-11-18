@@ -9,7 +9,7 @@ mod common;
 mod cli;
 mod repo;
 mod bed_plan;
-mod tasks;
+mod task;
 mod evaluator;
 mod formatter;
 mod plan;
@@ -90,11 +90,11 @@ fn print_week(week: usize) -> Result<(), Box<dyn std::error::Error>> {
     let params = repo.get_params()?;
     let evaluator = crate::evaluator::Evaluator::new(&params, &plan);
     let tasks = evaluator.get_tasks();    
-    let week_instructions = tasks.get(week);
+    let week_tasks = tasks.get(week);
 
     println!("Tasks for week #{}", week);
 
-    for t in week_instructions.iter() {
+    for t in week_tasks.iter() {
         println!("- {}", t);
     }
 

@@ -6,6 +6,8 @@ use std::collections::HashMap;
 use std::error::Error;
 use simple_error::*;
 use regex::Regex;
+use crate::task::Task;
+use std::convert::TryFrom;
 
 // Represents a variety of crop
 // Loaded from params.json and used as part of the input parameters to the plan generating algorithm
@@ -16,7 +18,7 @@ pub struct Variety {
     pub harvest_schedule: Vec<HarvestableUnits>,
     harvestable_by_week: Vec<bool>,
     pub requirements: Vec<String>,
-    pub instructions: HashMap<String, String>,
+    pub tasks: HashMap<String, Task>,
     pub value_per_unit: i32
 }
 
@@ -81,9 +83,9 @@ impl Variety {
             }
         }
 
-        let instructions = try_parse_instructions(&value_obj["instructions"])?;
+        let tasks = try_parse_tasks(&value_obj["tasks"])?;
 
-        let value_per_unit = as_int(&value_obj["value_per_unit"])?;
+        let value_per_unit = as_i32(&value_obj["value_per_unit"])?;
 
         let mut harvestable_by_week = vec![false; SEASON_LENGTH];
         for planting_week in 0..SEASON_LENGTH {
@@ -102,22 +104,22 @@ impl Variety {
             requirements: requirements,
             planting_schedule: planting_schedule,
             harvest_schedule: harvest_schedule,
-            instructions: instructions,
+            tasks: tasks,
             value_per_unit: value_per_unit,
             harvestable_by_week: harvestable_by_week
         })
     }
 }
 
-fn try_parse_instructions(input: &JsonValue) -> Result<HashMap<String, String>, Box<dyn Error>> {
+fn try_parse_tasks(input: &JsonValue) -> Result<HashMap<String, Task>, Box<dyn Error>> {
     let input_obj = as_object(input)?;
 
     let mut result = HashMap::new();
 
     for item in input_obj.iter() {
         let key = std::string::String::from(item.0);
-        let val = as_string(item.1)?;
-        result.insert(key, std::string::String::from(val));
+        let task = Task::try_from(item.1)?;
+        result.insert(key, task);
     }
 
     Ok(result)
@@ -132,10 +134,21 @@ fn variety_from_json() {
     "requirements": [ "polytunnel" ],
     "harvest_schedule": "0:3,4,5:2",
     "planting_schedule": "4-8,20-24,40,50",
-    "instructions": {
-        "-6": "Seed <variety> into a 64 tray and label it <label>",
-        "-4": "Transplant <variety> from tray <label> into 20cm pots and label them <label>",
-        "0": "Transplant <variety> from pots labelled <label> into bed <bed>"
+    "tasks": {
+        "-6": { 
+            "description": "Seed <variety> into a 64 tray and label it <label>",
+            "resources": [
+                { "name": "tomato seed", "quantity": 18 }
+            ]
+        },
+        "-4": { 
+            "description": "Transplant <variety> from tray <label> into 20cm pots and label them <label>",
+            "resources": []
+        },
+        "0": { 
+            "description": "Transplant <variety> from pots labelled <label> into bed <bed>",
+            "resources": []
+        }
     },
     "value_per_unit": 100
 }"#).expect("test is wrong");
@@ -155,8 +168,10 @@ fn variety_from_json() {
     assert_eq!(variety.planting_schedule[39], false);
     assert_eq!(variety.planting_schedule[40], true);
     assert_eq!(variety.planting_schedule[41], false);
-    assert_eq!(variety.instructions["-6"], "Seed <variety> into a 64 tray and label it <label>");
-    assert_eq!(variety.instructions["0"], "Transplant <variety> from pots labelled <label> into bed <bed>");
+    assert_eq!(variety.tasks["-6"].description, "Seed <variety> into a 64 tray and label it <label>");
+    assert_eq!(variety.tasks["-6"].resources[0].name, "tomato seed");
+    assert_eq!(variety.tasks["-6"].resources[0].quantity, 18);
+    assert_eq!(variety.tasks["0"].description, "Transplant <variety> from pots labelled <label> into bed <bed>");
     assert_eq!(variety.value_per_unit, 100);
     assert_eq!(variety.harvestable_by_week[0], false);
     assert_eq!(variety.harvestable_by_week[1], true);
@@ -169,7 +184,7 @@ impl Variety {
             name: "".to_string(),
             harvest_schedule: vec![],
             planting_schedule: [false;SEASON_LENGTH],
-            instructions: std::collections::HashMap::new(),
+            tasks: std::collections::HashMap::new(),
             requirements: vec![],
             value_per_unit: 100,
             harvestable_by_week: vec![false; SEASON_LENGTH]
@@ -182,7 +197,7 @@ impl Variety {
             name: name.to_string(),
             harvest_schedule: vec![],
             planting_schedule: [true;SEASON_LENGTH],
-            instructions: std::collections::HashMap::new(),
+            tasks: std::collections::HashMap::new(),
             requirements: reqs.iter().map(|s| s.to_string()).collect::<Vec<_>>(),
             value_per_unit: 100,
             harvestable_by_week: vec![true; SEASON_LENGTH]

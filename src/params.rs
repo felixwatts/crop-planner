@@ -28,7 +28,7 @@ impl TryFrom<&JsonValue> for Params {
         };
 
         let value_json_obj = as_object(value)?;
-        params.num_baskets = as_int(&value_json_obj["num_baskets"])?;
+        params.num_baskets = as_i32(&value_json_obj["num_baskets"])?;
         let varieties_json_array = as_array(&value_json_obj["varieties"])?;
         params.varieties = varieties_json_array.iter().map(|j| Variety::try_parse(j)).collect::<Result<Vec<_>, _>>()?;
         params.varieties.insert(0, crate::variety::Variety::empty());
@@ -74,10 +74,21 @@ fn params_from_json() {
             "requirements": [ ],
             "harvest_schedule": "0:3,4,5:2",
             "planting_schedule": "3,4,10-20",
-            "instructions": {
-                "-2": "Seed <variety> into a 144 tray and label it <label>",
-                "-1": "Move tray <label> to harden off",
-                "0": "Transplant <variety> from tray <label> into bed <bed>"
+            "tasks": {
+                "-6": { 
+                    "description": "Seed <variety> into a 64 tray and label it <label>",
+                    "resources": [
+                        { "name": "tomato seed", "quantity": 18 }
+                    ]
+                },
+                "-4": { 
+                    "description": "Transplant <variety> from tray <label> into 20cm pots and label them <label>",
+                    "resources": []
+                },
+                "0": { 
+                    "description": "Transplant <variety> from pots labelled <label> into bed <bed>",
+                    "resources": []
+                }
             },
             "value_per_unit": 100
         },
@@ -86,10 +97,21 @@ fn params_from_json() {
             "requirements": [ "polytunnel" ],
             "harvest_schedule": "0:3,4,5:2",
             "planting_schedule": "3,4,10-20",
-            "instructions": {
-                "-6": "Seed <variety> into a 64 tray and label it <label>",
-                "-4": "Transplant <variety> from tray <label> into 20cm pots and label them <label>",
-                "0": "Transplant <variety> from pots labelled <label> into bed <bed>"
+            "tasks": {
+                "-6": { 
+                    "description": "Seed <variety> into a 64 tray and label it <label>",
+                    "resources": [
+                        { "name": "tomato seed", "quantity": 18 }
+                    ]
+                },
+                "-4": { 
+                    "description": "Transplant <variety> from tray <label> into 20cm pots and label them <label>",
+                    "resources": []
+                },
+                "0": { 
+                    "description": "Transplant <variety> from pots labelled <label> into bed <bed>",
+                    "resources": []
+                }
             },
             "value_per_unit": 100
         }
@@ -110,8 +132,8 @@ fn params_from_json() {
     assert!(params.varieties[2].requirements.contains(&String::from("polytunnel")));
     assert!(!params.varieties[2].requirements.contains(&String::from("magic")));
     assert_eq!(params.varieties[1].harvest_schedule, vec![0,0,0,4,5,5]);
-    assert_eq!(params.varieties[2].instructions["-6"], "Seed <variety> into a 64 tray and label it <label>");
-    assert_eq!(params.varieties[2].instructions["0"], "Transplant <variety> from pots labelled <label> into bed <bed>");
+    assert_eq!(params.varieties[2].tasks["-6"].description, "Seed <variety> into a 64 tray and label it <label>");
+    assert_eq!(params.varieties[2].tasks["0"].description, "Transplant <variety> from pots labelled <label> into bed <bed>");
 
     assert_eq!(params.num_baskets, 42);
 }

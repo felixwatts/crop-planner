@@ -49,7 +49,7 @@ $> harvest print
           51        83%                                                                                               100%        50%                      
 
 Utilization: 67%
-Satisfaction: 63%
+Saturation: 63%
 Profit: 15224.74
 $>
 ```
