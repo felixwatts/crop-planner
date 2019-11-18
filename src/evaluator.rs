@@ -36,7 +36,7 @@ impl<'a> Evaluator<'a> {
 
     // Returns a number between 0 and 1 representing the extent to which each variety that could
     // possibly be harvested in each week can be harvested with enough quantity to fill the market
-    pub fn get_basket_satisfaction(&self) -> f32 {
+    pub fn get_market_saturation(&self) -> f32 {
 
         let harvest_plan = self.get_harvest_plan();
 
